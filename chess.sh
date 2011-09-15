@@ -1,4 +1,6 @@
 #!/bin/bash
+# Network chess by Evgeny Stepanischev http://bolknote.ru 2011
+
 if [ $# -ne 2 ]; then
     echo Usage: $0 host-of-opponent port
     exit
