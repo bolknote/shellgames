@@ -315,6 +315,7 @@ FillBoard
 # Кто будет ходить первым
 ToNet HI
 [[ "$(NetListen)" == "HI" ]] && OURMOVE=1
+sleep 0.2
 ToNet ULOOSE
 
 [ "$OURMOVE" ] && MYCOLOR=W || MYCOLOR=B
