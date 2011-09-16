@@ -43,13 +43,13 @@ KSPACE=20
 function Restore {
     echo -ne "\033[5B\033[5B\033[?25h\033[m"
     stty "$ORIG" 2>/dev/null
-    bind '"\r":accept-line' 2>/dev/null
+    (bind '"\r":accept-line' 2>/dev/null)
 }
 
 trap Restore EXIT
 
 # Выключаем Enter
-bind -r '\r' 2>/dev/null
+(bind -r '\r' 2>/dev/null)
 # Выключаем остальную клавиатуру
 ORIG=`stty -g`
 stty -echo
