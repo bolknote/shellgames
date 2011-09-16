@@ -1,21 +1,31 @@
 #!/bin/sh
 
 # Координаты каретки
-CX=1
+CX=2
 
-# Координаты шарика
-BX=1 BY=1
+# Координаты мяча
+BX=200 BY=200
+
+# Угол приращения мяча
+BAX=100 BAY=100
 
 # Нужно ли обновить экран
 REDRAW=1
 
+# Зарезервировано для линии коробки
+LINE1=
+
+# Координатная сетка виртуального экрана
+declare -a XY
+
+# Обработка клавиатурных событий
 function KeyEvent {
 	case $1 in
 		LEFT)
-			[ $CX -gt 1 ] && CX=$(($CX-1))
+			[ $CX -gt 2 ] && CX=$(($CX-1))
 		;;
 		RIGHT)
-			[ $CX -lt 70 ] && CX=$((CX+1))
+			[ $CX -lt 71 ] && CX=$((CX+1))
 		;;
 		SPACE)
 		;;
@@ -24,13 +34,60 @@ function KeyEvent {
 	REDRAW=1
 }
 
-function DrawScreen {
-	echo -en "\033[${CX}C ☗☗☗☗ \033[$(($CX+7))D"
-	#echo -en "\033[1A\033[K\033[${BX}C ◯\033[$(($BX+2))D\033[1B"
+# Отрисовываем коробку в виртуальный экран, стирая всё
+function Box {
+	local x y b="\033[38;5;8m♻"
+	XY=()
+
+	for (( x=0; x<78; x+=2 )); do
+		XY[$x]=$b XY[$x+3100]=$b
+		XY[$x+1]=' ' XY[$x+3101]=' '
+	done
+	
+	for y in {1..30}; do
+		XY[$y*100]=$b
+		XY[$y*100+76]=$b
+	done
 }
 
+# Перерисовка экрана
+function DrawScreen {
+	Box
+	
+	XY[$CX+3000]="\033[38;5;160m☗"
+	XY[$CX+3001]="\033[38;5;202m☰"
+	XY[$CX+3002]="☰"
+	XY[$CX+3003]="\033[38;5;160m☗"
+	
+	XY[$BX/100+$BY]="\033[0m◯"
+	
+	echo -ne "\033[32A"
+	
+	local x y
+	
+	for y in {0..31}; do
+		for x in {0..76}; do
+			echo -ne "${XY[$x+$y*100]:- }"
+		done
+		echo
+	done
+}
+
+# Фоновые расчёты координат
 function BackScene {
-	BX=$((BX+1))
+	local bx=$(($BX+$BAX))
+	local by=$(($BY+$BAY))
+	
+	if [[ "${XY[$bx+$by]:- }" == " " ]]; then
+		BX=$bx BY=$by
+	else
+		let BAX="-$BAX"
+		let BAY="-$BAY"
+		
+		let BX="$BX+$BAX"
+		let BY="$BY+$BAY"
+	fi 
+	
 	REDRAW=1
 }
 
@@ -44,6 +101,8 @@ function Alarm {
 }
 
 function Arcanoid {
+	Box
+	
 	trap 'KeyEvent LEFT'  USR1
 	trap 'KeyEvent RIGHT' USR2
 	trap 'KeyEvent SPACE' HUP
@@ -64,21 +123,6 @@ function Restore {
     echo -e "\033[?25h\033[0m"
 }
 
-# Отрисовываем коробку
-function Box {
-	local b=☩
-	local c="\033[38;5;8m"
-	local r="\033[0m"
-	local line=`printf "%039s" | sed "s/0/$b /g"`
-
-	echo -e "$c$line$r"
-	for i in {1..30}; do
-		printf "$c$b$r% 75s$c$b$r\n"
-	done
-	echo -e "$c$line\033[2A$r"
-	
-}
-
 # Запрещаем печатать вводимое на экран
 ORIG=`stty -g`
 stty -echo
@@ -87,8 +131,6 @@ trap Restore EXIT
 
 # Убирам курсор, очищаем экран
 echo -en "\033[?25l"
-
-Box
 
 Arcanoid & 
 CHILD=$!
