@@ -148,7 +148,7 @@ function PressEvents {
         fi
 
         if [ $code = $KSPACE ]; then
-            [ "$OURMOVE" ] && ToNet $KSPACE
+            [ "$OURMOVE" ] && sleep 0.2 && ToNet $KSPACE
 
             SpaceEvent && return
             continue
@@ -317,14 +317,19 @@ function SpaceEvent {
 
 # Очистка клавиатурного буфера
 function ClearKeyboardBuffer {
+	# Быстро — через bash 4+
+    [ $BASH -ge 4 ] && while read -t0.1 -n1 -rs; do :; done && return
+	
     # Быстро — через zsh
     which zsh &>/dev/null && zsh -c 'while {} {read -rstk1 || break}' && return
 
-    # Медленно — через bash
+    # Медленно — через bash 3-
     local delta
     while true; do
         delta=`(time -p read -rs -n1 -t1) 2>&1 | awk 'NR==1{print $2}'`
         [[ "$delta" == "0.00" ]] || break
+
+		echo $delta
     done
 }
 
@@ -347,8 +352,8 @@ while true; do
         PressEvents
         OURMOVE=
     else
-         NetEvents
-         OURMOVE=1
+        NetEvents
+        OURMOVE=1
     fi
 
     PrintBoard
