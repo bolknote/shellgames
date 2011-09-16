@@ -3,6 +3,9 @@
 # Выстрел
 # say -v Whisper -r 1200 00
 
+# Карта уровня
+declare -a MAP
+
 # Координаты каретки
 CX=2
 
@@ -15,19 +18,40 @@ BAX=0 BAY=0
 # Координатная сетка виртуального экрана
 declare -a XY
 
+# Заменяем say, если её нет
+which say &>/dev/null || function say {
+	:
+}
+
 # Обработка клавиатурных событий
 function KeyEvent {
 	case $1 in
 		LEFT)
-			[ $CX -gt 2 ] && CX=$(($CX-1))
+			[ $CX -gt 2 ] && let 'CX-=1'
 		;;
 		RIGHT)
-			[ $CX -lt 70 ] && CX=$((CX+1))
+			[ $CX -lt 70 ] && let 'CX+=1'
 		;;
 		SPACE)
 			SpaceEvent
 		;;
 	esac
+}
+
+# Уровень рисуем
+function DrawLevel {
+	local b=☲ y x
+	local c=("38;5;34" "38;5;34" "38;5;24" "38;5;24" "38;5;34" "38;5;204" "38;5;204")
+	
+	for y in {4..10}; do
+		for x in {2..74}; do
+			if [ $(( ($x+1) % 3)) -eq 0 ]; then
+				XY[$y*100+$x]=' '
+			else
+				XY[$y*100+$x]="\033[${c[$y-4]}m$b"
+			fi
+		done
+	done
 }
 
 # Отрисовываем коробку в виртуальный экран, стирая всё
@@ -49,6 +73,7 @@ function Box {
 # Перерисовка основных объектов экрана
 function DrawObjects {
 	Box
+	DrawLevel
 	
 	XY[$CX+3000]="\033[38;5;160m☗"
 	XY[$CX+3001]="\033[38;5;202m☰"
@@ -62,10 +87,11 @@ function DrawObjects {
 function SpaceEvent {
 	# если мяч прилеплен к каретке, стартуем
 	if [ $BAX -eq 0 ]; then
-		(say -v Whisper -r 1000 forfor &>/dev/null) &
 		BAY=-100
 		[ $CX -gt 38 ] && BAX=1 || BAX=-1
 		
+		say -v Whisper -r 1000 forfor &>/dev/null
+				
 		return
 	fi
 }
@@ -136,7 +162,7 @@ function DrawBall {
 }
 
 function Arcanoid {
-	Box
+	exec 2>&-
 	
 	trap 'KeyEvent LEFT'  USR1
 	trap 'KeyEvent RIGHT' USR2
