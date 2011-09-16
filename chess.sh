@@ -43,13 +43,13 @@ KSPACE=20
 function Restore {
     echo -ne "\033[5B\033[5B\033[?25h\033[m"
     stty "$ORIG" 2>/dev/null
-    bind '"\r":accept-line'
+    bind '"\r":accept-line' 2>/dev/null
 }
 
 trap Restore EXIT
 
 # Выключаем Enter
-bind -r '\r'
+bind -r '\r' 2>/dev/null
 # Выключаем остальную клавиатуру
 ORIG=`stty -g`
 stty -echo
@@ -300,7 +300,7 @@ function SpaceEvent {
 # Очистка клавиатурного буфера
 function ClearKeyboardBuffer {
     # Быстро — через zsh
-    which -s zsh && (zsh -c 'while {} {read -rstk1 || break}'; return)
+    which zsh &>/dev/null && (zsh -c 'while {} {read -rstk1 || break}'; return)
 
     # Медленно — через bash
     local delta
