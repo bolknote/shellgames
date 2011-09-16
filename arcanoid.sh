@@ -4,16 +4,11 @@
 CX=2
 
 # Координаты мяча
-BX=200 BY=200
+BX=3 BY=300
 
 # Угол приращения мяча
-BAX=100 BAY=100
+BAX=1 BAY=100
 
-# Нужно ли обновить экран
-REDRAW=1
-
-# Зарезервировано для линии коробки
-LINE1=
 
 # Координатная сетка виртуального экрана
 declare -a XY
@@ -30,8 +25,6 @@ function KeyEvent {
 		SPACE)
 		;;
 	esac
-	
-	REDRAW=1
 }
 
 # Отрисовываем коробку в виртуальный экран, стирая всё
@@ -41,26 +34,28 @@ function Box {
 
 	for (( x=0; x<78; x+=2 )); do
 		XY[$x]=$b XY[$x+3100]=$b
-		XY[$x+1]=' ' XY[$x+3101]=' '
+		XY[$x+1]=" " XY[$x+3101]=" "
 	done
 	
-	for y in {1..30}; do
-		XY[$y*100]=$b
-		XY[$y*100+76]=$b
+	for (( y=100; y<=3000; y+=100)) do
+		XY[$y]=$b XY[$y+1]=' '
+		XY[$y+76]=$b XY[$y+75]=' '
 	done
 }
 
-# Перерисовка экрана
-function DrawScreen {
+# Перерисовка основных объектов экрана
+function DrawObjects {
 	Box
 	
 	XY[$CX+3000]="\033[38;5;160m☗"
 	XY[$CX+3001]="\033[38;5;202m☰"
 	XY[$CX+3002]="☰"
 	XY[$CX+3003]="\033[38;5;160m☗"
-	
-	XY[$BX/100+$BY]="\033[0m◯"
-	
+
+}
+
+# Рисуем экран
+function DrawScreen {
 	echo -ne "\033[32A"
 	
 	local x y
@@ -73,31 +68,33 @@ function DrawScreen {
 	done
 }
 
-# Фоновые расчёты координат
-function BackScene {
+# Рисуем мяч
+function DrawBall {
 	local bx=$(($BX+$BAX))
 	local by=$(($BY+$BAY))
 	
-	if [[ "${XY[$bx+$by]:- }" == " " ]]; then
+	# Проверяем, не наткнулись ли мы на какое-то препятствие
+	if [[ "${XY[$bx+$by]:-0}" == "0" ]]; then
+		# Нет
 		BX=$bx BY=$by
 	else
-		let BAX="-$BAX"
-		let BAY="-$BAY"
+		local wu wd wl wr
+		
+		if [[ "${XY[$bx+$by+100]:-0}" != "0" || $by > 100 && "${XY[$bx+$by-100]:-0}" != "0" ]]; then
+			let BAX="-$BAX"
+		fi
+		
+		if [[ "${XY[$bx+$by+1]:-0}" != "0" || $bx > 1 && "${XY[$bx+$by-1]:-0}" != "0" ]]; then
+			let BAY="-$BAY"
+		fi
 		
 		let BX="$BX+$BAX"
 		let BY="$BY+$BAY"
-	fi 
+	fi
+	
+	XY[$BX+$BY]="\033[38;5;15m◯"
 	
 	REDRAW=1
-}
-
-function Alarm {
-	trap exit TERM
-	
-	while true; do
-		sleep 0.1
-		kill -ALRM $1
-	done	
 }
 
 function Arcanoid {
@@ -106,26 +103,29 @@ function Arcanoid {
 	trap 'KeyEvent LEFT'  USR1
 	trap 'KeyEvent RIGHT' USR2
 	trap 'KeyEvent SPACE' HUP
-	trap BackScene ALRM
 	trap exit TERM
 	
 	while true; do
-		[ "$REDRAW" ] && DrawScreen && REDRAW=
+		DrawObjects
+		DrawBall
+		DrawScreen
 	done
 }
 
 function Restore {
 	[ "$CHILD" ] && kill $CHILD
-	[ "$BGJOB" ] && kill $BGJOB
 	wait
 
  	stty "$ORIG"
     echo -e "\033[?25h\033[0m"
+
+	(bind '"\r":accept-line') &>/dev/null
 }
 
 # Запрещаем печатать вводимое на экран
 ORIG=`stty -g`
 stty -echo
+(bind -r '\r') &>/dev/null
 
 trap Restore EXIT
 
@@ -135,17 +135,7 @@ echo -en "\033[?25l"
 Arcanoid & 
 CHILD=$!
 
-Alarm $CHILD &
-BGJOB=$!
-
-
-#echo '  ◯'
-#echo '˚    ˚'
-#echo  ☱☰☰☰☰☱
-
 while read -n1 ch; do
-	#printf "%d" "'$ch"
-	
 	case `printf "%d" "'$ch"` in
 		97) 
 		kill -USR1 $CHILD
