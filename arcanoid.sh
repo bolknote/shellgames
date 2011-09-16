@@ -1,14 +1,16 @@
 #!/bin/sh
 
+# Выстрел
+# say -v Whisper -r 1200 00
+
 # Координаты каретки
 CX=2
 
 # Координаты мяча
-BX=3 BY=300
+BX=4 BY=2900
 
 # Угол приращения мяча
-BAX=1 BAY=100
-
+BAX=0 BAY=0
 
 # Координатная сетка виртуального экрана
 declare -a XY
@@ -20,9 +22,10 @@ function KeyEvent {
 			[ $CX -gt 2 ] && CX=$(($CX-1))
 		;;
 		RIGHT)
-			[ $CX -lt 71 ] && CX=$((CX+1))
+			[ $CX -lt 70 ] && CX=$((CX+1))
 		;;
 		SPACE)
+			SpaceEvent
 		;;
 	esac
 }
@@ -50,8 +53,29 @@ function DrawObjects {
 	XY[$CX+3000]="\033[38;5;160m☗"
 	XY[$CX+3001]="\033[38;5;202m☰"
 	XY[$CX+3002]="☰"
-	XY[$CX+3003]="\033[38;5;160m☗"
+	XY[$CX+3003]="☰"
+	XY[$CX+3004]="\033[38;5;160m☗"
 
+}
+
+# Нажали на space
+function SpaceEvent {
+	# если мяч прилеплен к каретке, стартуем
+	if [ $BAX -eq 0 ]; then
+		(say -v Whisper -r 1000 forfor &>/dev/null) &
+		BAY=-100
+		[ $CX -gt 38 ] && BAX=1 || BAX=-1
+		
+		return
+	fi
+}
+
+# Мячик ушёл в аут
+function MissBall {
+	(say -v Whisper -r 1000 2 uo &>/dev/null) &
+	BAX=0 BAY=0
+	let BX="$CX+4"
+	BY=2900
 }
 
 # Рисуем экран
@@ -68,33 +92,47 @@ function DrawScreen {
 	done
 }
 
-# Рисуем мяч
+# Рисуем мяч, должен рисоваться после всех объектов
 function DrawBall {
-	local bx=$(($BX+$BAX))
-	local by=$(($BY+$BAY))
+	# Если мяч не двигается, следуем за кареткой
+	if [ $BAX -eq 0 ]; then
+		let BX="$CX+2"
+	else		
+		local bx=$(($BX+$BAX))
+		local by=$(($BY+$BAY))
+		
+		# Мяч достиг дна
+		[ $BY -ge 3000 ] && MissBall && return
 	
-	# Проверяем, не наткнулись ли мы на какое-то препятствие
-	if [[ "${XY[$bx+$by]:-0}" == "0" ]]; then
-		# Нет
-		BX=$bx BY=$by
-	else
-		local wu wd wl wr
+		# Проверяем, не наткнулись ли мы на какое-то препятствие
+		if [[ "${XY[$bx+$by]:-0}" == "0" ]]; then
+			# Нет
+			BX=$bx BY=$by
+		else			
+			(say -v Whisper -r 1000 1 &>/dev/null) &			
+			
+			local h=0 v=0
+			declare -i h v
 		
-		if [[ "${XY[$bx+$by+100]:-0}" != "0" || $by > 100 && "${XY[$bx+$by-100]:-0}" != "0" ]]; then
-			let BAX="-$BAX"
+			[[ "${XY[$bx+$by+100]:-0}" != "0" ]] && v=1
+			[[ $by > 100 && "${XY[$bx+$by-100]:-0}" != "0" ]] && v="1$v"
+			[[ "${XY[$bx+$by+1]:-0}" != "0" ]] && h=1
+			[[ $bx > 1 && "${XY[$bx+$by-1]:-0}" != "0" ]] && h="1$h"
+		
+			if [ $h -ge $v ]; then
+				let BAY="-$BAY"
+			fi
+
+			if [ $h -le $v ]; then
+				let BAX="-$BAX"
+			fi
+		
+			let BX="$BX+$BAX"
+			let BY="$BY+$BAY"
 		fi
-		
-		if [[ "${XY[$bx+$by+1]:-0}" != "0" || $bx > 1 && "${XY[$bx+$by-1]:-0}" != "0" ]]; then
-			let BAY="-$BAY"
-		fi
-		
-		let BX="$BX+$BAX"
-		let BY="$BY+$BAY"
 	fi
 	
 	XY[$BX+$BY]="\033[38;5;15m◯"
-	
-	REDRAW=1
 }
 
 function Arcanoid {
@@ -122,6 +160,7 @@ function Restore {
 	(bind '"\r":accept-line') &>/dev/null
 }
 
+
 # Запрещаем печатать вводимое на экран
 ORIG=`stty -g`
 stty -echo
@@ -130,7 +169,7 @@ stty -echo
 trap Restore EXIT
 
 # Убирам курсор, очищаем экран
-echo -en "\033[?25l"
+echo -en "\033[?25l\033[2J"
 
 Arcanoid & 
 CHILD=$!
