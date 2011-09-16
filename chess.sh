@@ -288,9 +288,16 @@ function SpaceEvent {
         if [[ $(CheckColor "$TAKEN") == $(CheckColor "${XY[$xy]}") ]]; then
             echo -en "\007"
         else
-            # Мы взяли фигуру
-            TAKEN=${XY[$xy]}
-            XY[$xy]="S "
+			# Фигура есть «в руке», мы «съедаем» противника
+			if [ "$TAKEN" ]; then
+			    XY[$xy]=$TAKEN
+                TAKEN=
+                return 0    
+			else	
+                # «В руке» ничего не было, мы взяли фигуру
+                TAKEN=${XY[$xy]}
+                XY[$xy]="S "
+            fi
         fi
     fi
 
