@@ -3,16 +3,19 @@
 
 if [ $# -ne 2 ]; then
     echo Usage: $0 host-of-opponent port
-    exit 1
+    exit
 fi
 
 # Нам требуется netcat, ищем как он называется на этой системе
 NC=
-for i in nc1 netcat ncat pnetcat; do
+for i in nc netcat ncat pnetcat; do
     which $i &>/dev/null && NC=$i && break
 done
 
-[ -z "$NC"] && echo 'Error: you have to install netcat to continue' && exit 1
+[ -z "$NC" ] && echo 'Error: you have to install netcat to continue' && exit
+
+# Версия bash
+BASH=(${BASH_VERSION/./ })
 
 # Хост оппонента
 HOST="$1"
