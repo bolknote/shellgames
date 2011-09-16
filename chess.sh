@@ -52,7 +52,7 @@ KSPACE=20
 
 # Восстановление экрана
 function Restore {
-    echo -ne "\033[5B\033[5B\033[?25h\033[m"
+    echo -ne "\033[10B\033[?25h\033[0m"
     stty "$ORIG" 2>/dev/null
     (bind '"\r":accept-line' 2>/dev/null)
 }
