@@ -307,7 +307,7 @@ function SpaceEvent {
 # Очистка клавиатурного буфера
 function ClearKeyboardBuffer {
     # Быстро — через zsh
-    which zsh &>/dev/null && (zsh -c 'while {} {read -rstk1 || break}'; return)
+    which zsh &>/dev/null && zsh -c 'while {} {read -rstk1 || break}' && return
 
     # Медленно — через bash
     local delta
