@@ -3,8 +3,16 @@
 
 if [ $# -ne 2 ]; then
     echo Usage: $0 host-of-opponent port
-    exit
+    exit 1
 fi
+
+# Нам требуется netcat, ищем как он называется на этой системе
+NC=
+for i in nc1 netcat ncat pnetcat; do
+    which $i &>/dev/null && NC=$i && break
+done
+
+[ -z "$NC"] && echo 'Error: you have to install netcat to continue' && exit 1
 
 # Хост оппонента
 HOST="$1"
@@ -59,7 +67,7 @@ echo -e "\033[?25l"
 
 # Отдаём события клавиатуры в сеть
 function ToNet {
-    echo $1 | nc "$HOST" "$PORT"
+    echo $1 | $NC "$HOST" "$PORT"
 }
 
 # Реакция на клавиши курсора
@@ -249,7 +257,7 @@ function PrintBoard {
 
 # Приём событий
 function NetListen {
-    nc -l $PORT
+    $NC -l $PORT
 }
 
 # Готовы слушать события сети
