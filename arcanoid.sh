@@ -13,7 +13,7 @@ declare -a MAPS
 
 # X Y Тип (цвет) Количество
 MAPS=(\
-	"4 4 0 18  4 5 0 18  4 6 1 18  4 7 1 18  4 8 0 18  4 9 2 18  4 10 2 18"
+	"4 4 0 12  4 5 0 12  4 6 1 12  4 7 1 12  4 8 0 12  4 9 2 12  4 10 2 12"
 )
 
 # Количество блоков на уровне
@@ -59,17 +59,16 @@ function DrawMap {
 	for ((i=0; i<${#map[@]}; i+=4)); do
 		x=${map[$i]}   y=${map[$i+1]}
 		t=${map[$i+2]} q=${map[$i+3]}
-		
+
 		let "MAPQUANT+=$q"
 		
 		c="\033[${MAPCOLORS[$t]}m☲"
 
 		while [ $q -gt 0 ]; do
-			for j in {0..1}; do
+			for j in {0..3}; do
 				XY[$x+100*$y+$j]=$c
-				c=☲
 			done
-			let 'x+=4, q--'
+			let 'x+=6, q--'
 		done
 	done
 }
@@ -230,13 +229,31 @@ function PrintBall {
 				
 				# Проверка на столкновение с блоком
 				if [[ $c =~ ☲ ]]; then
-					# Ищем начало блока, длина блока всего два
-					[[ ${XY[$bx+$by-1]} =~ ☲ ]] && let 'bx--'
+					# Ищем начало блока
+					while [[ ${XY[$bx+$by-1]} =~ ☲ ]]; do
+						let 'bx--'
+					done
 					
-					unset XY[$bx+$by] XY[$bx+$by+1]
-					local y=$((30-$by/100))
+					# Выясняем цвет блока
+					case ${XY[$bx+$by]:5} in
+						*${MAPCOLORS[0]}* )
+							#echo 1
+							;;
+						*${MAPCOLORS[1]}* )
+							#echo 2
+							;;
+						*${MAPCOLORS[2]}* )
+							#echo 3
+							;;
+					esac
 					
-					echo -ne "\033[$(($bx+1))G\033[${y}A  \033[${y}B"
+					for y in {0..3}; do
+						unset XY[$bx+$by+$y]
+					done
+						
+					y=$((30-$by/100))
+					
+					echo -ne "\033[$(($bx+1))G\033[${y}A    \033[${y}B"
 					let 'MAPQUANT--'
 				fi
 			fi
