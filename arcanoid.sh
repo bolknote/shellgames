@@ -91,20 +91,18 @@ function PrintСarriage {
 	# нарисовать каретку 
 	
 	if [ -z "$OCX" ]; then
-		echo -ne "\033[${CX}C"
+		echo -ne "\033[${CX}G"
 	else
 		# Стираем каретку с того места, где она была,
 		# дополнительные пробелы по краям стирают глюки
-		echo -ne "\033[$(($OCX-1))C${CSPACES:0:$CW+4}"
-		echo -ne "\033[1G\033[${CX}C"
+		echo -ne "\033[$(($OCX-1))G${CSPACES:0:$CW+4}"
+		echo -ne "\033[${CX}G"
 	fi
 	
 	echo -ne "\033[38;5;160m☗\033[38;5;202m"
 	echo -n  "${CBLOCKS:0:$CW}"
 	echo -ne "\033[38;5;160m☗"
 
-	# Возвращаем курсор
-	echo -ne "\033[1G"
 	OCX=
 }
 
@@ -141,15 +139,15 @@ function PrintScreen {
 		echo
 	done
 	
-	# Курсор в нижний левый угол (по x=1, по y=линия каретки)
-	echo -ne "\033[2A\033[1G"
+	# Курсор в нижний угол (по y=линия каретки)
+	echo -ne "\033[2A"
 }
 
 # Рисуем мяч, должен рисоваться после всех объектов
 function PrintBall {
 	# Чистим предыдущую позицию
-	local x=$((30-$BY/100))
-	echo -ne "\033[${BX}G\033[${x}A \033[1G\033[${x}B"
+	local y=$((30-$BY/100))
+	echo -ne "\033[${BX}G\033[${y}A \033[${y}B"
 	
 	# Если мяч не двигается, следуем за кареткой
 	if [ $BAX -eq 0 ]; then
@@ -200,8 +198,8 @@ function PrintBall {
 		fi
 	fi
 	
-	local x=$((30-$BY/100))
-	echo -ne "\033[${BX}G\033[${x}A\033[38;5;15m◯\033[1G\033[${x}B"
+	local y=$((30-$BY/100))
+	echo -ne "\033[${BX}G\033[${y}A\033[38;5;15m◯\033[${y}B"
 }
 
 function Arcanoid {
