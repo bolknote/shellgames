@@ -82,7 +82,7 @@ function DrawBox {
 	
 	for (( y=100; y<=3000; y+=100)) do
 		XY[$y]=$b XY[$y+1]=' '
-		XY[$y+76]=$b XY[$y+75]=' '
+		XY[$y+76]=$b
 	done
 }
 
@@ -96,7 +96,7 @@ function PrintСarriage {
 		# Стираем каретку с того места, где она была,
 		# дополнительные пробелы по краям стирают глюки
 		echo -ne "\033[$(($OCX-1))C${CSPACES:0:$CW+4}"
-		echo -ne "\033[100D\033[${CX}C"
+		echo -ne "\033[1G\033[${CX}C"
 	fi
 	
 	echo -ne "\033[38;5;160m☗\033[38;5;202m"
@@ -104,7 +104,7 @@ function PrintСarriage {
 	echo -ne "\033[38;5;160m☗"
 
 	# Возвращаем курсор
-	echo -ne "\033[100D"
+	echo -ne "\033[1G"
 	OCX=
 }
 
@@ -141,15 +141,15 @@ function PrintScreen {
 		echo
 	done
 	
-	# Курсор в нижний левый угол (по x=0, по y=линия каретки)
-	echo -ne "\033[2A\033[0G"
+	# Курсор в нижний левый угол (по x=1, по y=линия каретки)
+	echo -ne "\033[2A\033[1G"
 }
 
 # Рисуем мяч, должен рисоваться после всех объектов
 function PrintBall {
 	# Чистим предыдущую позицию
 	local x=$((30-$BY/100))
-	echo -ne "\033[${BX}G\033[${x}A \033[0G\033[${x}B"
+	echo -ne "\033[${BX}G\033[${x}A \033[1G\033[${x}B"
 	
 	# Если мяч не двигается, следуем за кареткой
 	if [ $BAX -eq 0 ]; then
@@ -201,7 +201,7 @@ function PrintBall {
 	fi
 	
 	local x=$((30-$BY/100))
-	echo -ne "\033[${BX}G\033[${x}A\033[38;5;15m◯\033[0G\033[${x}B"
+	echo -ne "\033[${BX}G\033[${x}A\033[38;5;15m◯\033[1G\033[${x}B"
 }
 
 function Arcanoid {
@@ -219,6 +219,8 @@ function Arcanoid {
 	while true; do
 		PrintСarriage
 		PrintBall
+		sleep 0.02
+		PrintСarriage
 		sleep 0.02
 		PrintСarriage
 		sleep 0.02
