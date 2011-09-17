@@ -182,7 +182,7 @@ function Boom {
 function PrintBall {
 	# Чистим предыдущую позицию
 	local y=$((30-$BY/100))
-	echo -ne "\033[$(($BX+1))G\033[${y}A${XY[$BX+100*$BY]:- }\033[${y}B"
+	echo -ne "\033[$(($BX+1))G\033[${y}A${XY[$BX+$BY]:- }\033[${y}B"
 	
 	# Если мяч не двигается, следуем за кареткой
 	if [ $BAX -eq 0 ]; then
@@ -251,6 +251,7 @@ function PrintBall {
 						let 'MAPQUANT--'
 						;;
 
+						# Этот просто исчезает
 						*${MAPCOLORS[2]}* )
 							for y in {0..3}; do
 								unset XY[$bx+$by+$y]
@@ -265,12 +266,12 @@ function PrintBall {
 						# Этот блок будет преобразован в другой цвет
 						*${MAPCOLORS[1]}* )
 							for y in {0..3}; do
-								XY[$bx+$by+$y]="\033[${MAPCOLORS[0]}m☲"
+								XY[$bx+$by+$y]="\033[${MAPCOLORS[2]}m☲"
 							done
 							
 							y=$((30-$by/100))
 							
-							echo -ne "\033[$(($bx+1))G\033[${y}A\033[${MAPCOLORS[0]}m☲☲☲☲\033[${y}B"
+							echo -ne "\033[$(($bx+1))G\033[${y}A\033[${MAPCOLORS[2]}m☲☲☲☲\033[${y}B"
 							;;
 					esac
 				fi
