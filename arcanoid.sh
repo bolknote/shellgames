@@ -11,12 +11,16 @@ declare -a MAP
 # Координаты каретки
 CX=2 OCX=
 
-# Ширина средней части каретки (полная ширина минус 2)
-CW=3
+# Создание каретки заданной длины, заполняем глобальные
+# переменные
+function CreateСarriage {
+	CW=$1
+	# Каретка, забитая пробелами и ☰, для ускорения
+	CSPACES=$(printf "% $(($CW+2))s")
+	CBLOCKS=$(printf "%0$(($CW-2))s" | sed 's/0/☰/g')
+}
 
-# Каретка, забитая пробелами и ☰, для ускорения
-CSPACES='          '
-CBLOCKS='☰☰☰☰☰☰☰☰☰☰'
+CreateСarriage 5
 
 # Координаты мяча
 BX=5 BY=2900
@@ -95,12 +99,12 @@ function PrintСarriage {
 	else
 		# Стираем каретку с того места, где она была,
 		# дополнительные пробелы по краям стирают глюки
-		echo -ne "\033[${OCX}G${CSPACES:0:$CW+4}"
+		echo -ne "\033[${OCX}G${CSPACES}"
 		echo -ne "\033[$(($CX+1))G"
 	fi
 	
 	echo -ne "\033[38;5;160m☗\033[38;5;202m"
-	echo -n  "${CBLOCKS:0:$CW}"
+	echo -n  $CBLOCKS
 	echo -ne "\033[38;5;160m☗"
 
 	OCX=
@@ -151,7 +155,7 @@ function PrintBall {
 	
 	# Если мяч не двигается, следуем за кареткой
 	if [ $BAX -eq 0 ]; then
-		let BX="$CX+1+$CW/2"
+		let BX="$CX+$CW/2"
 	else		
 		local bx=$(($BX+$BAX))
 		local by=$(($BY+$BAY))
@@ -159,7 +163,7 @@ function PrintBall {
 		# Мяч коснулся каретки или дна
 		if [[ $by -eq 3000 ]]; then
 			# Каретки
-			if [[ $bx -ge $CX && $bx -le $(($CX+$CW+2)) ]]; then
+			if [[ $bx -ge $CX && $bx -le $(($CX+$CW)) ]]; then
 				let BAY="-$BAY"
 				let "BX+=$BAX"
 				let "BY+=$BAY"
