@@ -49,10 +49,6 @@ BAX=0 BAY=0
 # Координатная сетка виртуального экрана
 declare -a XY
 
-function say {
-	:
-}
-
 # Заменяем say, если её нет
 which say &>/dev/null || function say {
 	:
@@ -144,7 +140,7 @@ function SpaceEvent {
 		BAY=-100
 		[ $CX -gt 38 ] && BAX=1 || BAX=-1
 		
-		(say -v Whisper -r 1000 forfor &>/dev/null) &
+		SoundSpace
 				
 		return
 	fi
@@ -152,7 +148,7 @@ function SpaceEvent {
 
 # Мячик ушёл в аут
 function MissBall {
-	(say -v Whisper -r 1000 2 uo &>/dev/null) &
+	SoundOut
 	BAX=0 BAY=0
 	let BX="$CX+4"
 	BY=2900
@@ -171,7 +167,7 @@ function MissBall {
 function PrintScreen {
 	local x y xy
 	
-	(say -v Zarvox "eueir" &>/dev/null) &
+	SoundWelcome
 	
 	for y in {0..31}; do
 		for x in {0..76}; do
@@ -190,9 +186,34 @@ function PrintScreen {
 	echo -ne "\033[2A\033[20B"
 }
 
+# Нажатие на Space
+function SoundSpace {
+	(say -v Whisper -r 1000 forfor &>/dev/null) &
+}
+
 # Столкновение мяча
-function Boom {
+function SoundBoom {
 	(say -v Whisper -r 1000 1 &>/dev/null) &
+}
+
+# Звук прилипания
+function SoundStick {
+	(say -v Junior -r 1200 chpock &>/dev/null) &
+}
+
+# Звук ракетка стала длинее
+function SoundWide {
+	(say -v Whisper -r 400 heh &>/dev/null) &
+}
+
+# Звук шарик в аут
+function SoundOut {
+	(say -v Whisper -r 1000 2 uo &>/dev/null) &
+}
+
+# Звук заставки
+function SoundWelcome {
+	(say -v Zarvox "eueir" &>/dev/null) &
 }
 
 # Убрать блок
@@ -246,6 +267,8 @@ function PrintBall {
 					BAX=0 BAY=0
 					let BX="$CX+4"
 					BY=2900
+					
+					SoundStick
 				fi
 			# Дна
 			else
@@ -260,7 +283,7 @@ function PrintBall {
 				# Нет
 				BX=$bx BY=$by
 			else
-				Boom
+				SoundBoom
 				local h=0 v=0
 				declare -i h v
 		
@@ -337,11 +360,15 @@ function PrintGift {
 					if [ $CX -gt $((75-$CW)) ]; then
 						CX=$((75-$CW))
 					fi
+					
+					SoundWide
 
 				;;
 				
 				S)
 					STICKY=1
+					
+					SoundStick
 				;;
 			esac
 		fi
