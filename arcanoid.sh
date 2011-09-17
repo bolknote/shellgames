@@ -201,11 +201,13 @@ function PrintBall {
 			fi
 		else	
 			# Проверяем, не наткнулись ли мы на какое-то препятствие
-			if [[ "${XY[$bx+$by]:-0}" == "0" ]]; then
+			local c=${XY[$bx+$by]:-0}
+			
+			if [[ "$c" == "0" ]]; then
 				# Нет
 				BX=$bx BY=$by
 			else			
-				(say -v Whisper -r 1000 1 &>/dev/null) &			
+				(say -v Whisper -r 1000 1 &>/dev/null) &
 			
 				local h=0 v=0
 				declare -i h v
@@ -225,6 +227,18 @@ function PrintBall {
 		
 				let "BX+=$BAX"
 				let "BY+=$BAY"
+				
+				# Проверка на столкновение с блоком
+				if [[ $c =~ ☲ ]]; then
+					# Ищем начало блока, длина блока всего два
+					[[ ${XY[$bx+$by-1]} =~ ☲ ]] && let 'bx--'
+					
+					unset XY[$bx+$by] XY[$bx+$by+1]
+					local y=$((30-$by/100))
+					
+					echo -ne "\033[$(($bx+1))G\033[${y}A  \033[${y}B"
+					let 'MAPQUANT--'
+				fi
 			fi
 		fi
 	fi
