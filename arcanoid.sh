@@ -16,6 +16,9 @@ MAPS=(\
 	"4 4 0 12  4 5 0 12  4 6 1 12  4 7 1 12  4 8 0 12  4 9 2 12  4 10 2 12"
 )
 
+# Количество жизней
+LIVES=5
+
 # Количество блоков на уровне
 MAPQUANT=0
 
@@ -163,6 +166,18 @@ function MissBall {
 	printf "% 75s"
 	
 	STICKY=
+	
+	let 'LIVES--'
+	PrintLives
+	
+	if [ $LIVES -le 0 ]; then
+		echo -ne "\033[18A\033[29G\033[48;5;15;38;5;16m  G A M E  O V E R  "
+		echo -ne "\033[20B\033[1G\033[0m"
+		kill -HUP $PID
+		while true; do
+			sleep 0.3
+		done
+	fi
 }
 
 # Рисуем виртуальный экран на экран
@@ -239,8 +254,7 @@ function StartGift {
 		GX=$1
 		GY=$((30-$2/100+1))
 		
-		local gifts=(S W)
-		
+		local gifts=(S W L)	
 		GT=${gifts[$r-18]}
 	fi
 }
@@ -365,6 +379,8 @@ function PrintGift {
 						CX=$((75-$CW))
 					fi
 					
+					PrintLives
+					
 					SoundWide
 
 				;;
@@ -374,6 +390,10 @@ function PrintGift {
 					
 					SoundStick
 				;;
+				
+				L)
+					let 'LIVES++'
+					PrintLives
 			esac
 		fi
 		GT=
@@ -383,12 +403,22 @@ function PrintGift {
 	fi
 }
 
+# Печать жизней
+function PrintLives {
+	echo -ne "\033[31A\033[3G\033[0m${LIVES} "
+	echo -ne "\033[38;5;160m☗\033[38;5;202m$CBLOCKS\033[38;5;160m☗       \033[31B"
+}
+
 function Arcanoid {
 	exec 2>&-
+	CHLD=
+	
+	echo -e "\n"
 	
 	DrawBox
 	DrawMap $(($MAPNUMBER-1))
 	PrintScreen
+	PrintLives
 	
 	trap 'KeyEvent LEFT'  USR1
 	trap 'KeyEvent RIGHT' USR2
@@ -414,13 +444,17 @@ function Arcanoid {
 }
 
 function Restore {
-	[ "$CHILD" ] && kill $CHILD
+	[ -n "$CHILD" ] && kill $CHILD
 	wait
 
  	stty "$ORIG"
     echo -e "\033[?25h\033[0m"
 
 	(bind '"\r":accept-line') &>/dev/null
+	CHILD=
+	
+	trap '' EXIT HUP	
+	exit
 }
 
 
@@ -429,7 +463,8 @@ ORIG=`stty -g`
 stty -echo
 (bind -r '\r') &>/dev/null
 
-trap Restore EXIT
+trap 'Restore' EXIT HUP
+trap '' TERM
 
 # Убирам курсор
 echo -en "\033[?25l"
