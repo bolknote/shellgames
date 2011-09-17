@@ -3,6 +3,8 @@
 # Выстрел
 # say -v Whisper -r 1200 00
 
+PID=$$
+
 # Цвета блоков на уровнях
 MAPCOLORS=("38;5;34" "38;5;24" "38;5;204")
 
@@ -231,13 +233,15 @@ function RemoveBlock {
 
 # Роняем подарок
 function StartGift {
-	local r=$(( $RANDOM % 10 ))
+	local r=$(( $RANDOM % 20 ))
 	
-	if [ $r -ge 8 ]; then
+	if [ $r -ge 18 ]; then
 		GX=$1
 		GY=$((30-$2/100+1))
-	
-		[ $r -eq 8 ] && GT=S || GT=W
+		
+		local gifts=(S W)
+		
+		GT=${gifts[$r-18]}
 	fi
 }
 
@@ -389,6 +393,7 @@ function Arcanoid {
 	trap 'KeyEvent LEFT'  USR1
 	trap 'KeyEvent RIGHT' USR2
 	trap 'KeyEvent SPACE' HUP
+	trap "kill $PID" EXIT
 	trap exit TERM	
 	
 	while true; do
