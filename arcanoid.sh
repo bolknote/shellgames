@@ -173,6 +173,11 @@ function PrintScreen {
 	echo -ne "\033[2A\033[20B"
 }
 
+# Столкновение мяча
+function Boom {
+	(say -v Whisper -r 1000 1 &>/dev/null) &
+}
+
 # Рисуем мяч, должен рисоваться после всех объектов
 function PrintBall {
 	# Чистим предыдущую позицию
@@ -205,9 +210,8 @@ function PrintBall {
 			if [[ "$c" == "0" ]]; then
 				# Нет
 				BX=$bx BY=$by
-			else			
-				(say -v Whisper -r 1000 1 &>/dev/null) &
-			
+			else
+				Boom
 				local h=0 v=0
 				declare -i h v
 		
@@ -237,24 +241,38 @@ function PrintBall {
 					# Выясняем цвет блока
 					case ${XY[$bx+$by]:5} in
 						*${MAPCOLORS[0]}* )
-							#echo 1
-							;;
-						*${MAPCOLORS[1]}* )
-							#echo 2
-							;;
+						for y in {0..3}; do
+							unset XY[$bx+$by+$y]
+						done
+
+						y=$((30-$by/100))
+
+						echo -ne "\033[$(($bx+1))G\033[${y}A    \033[${y}B"
+						let 'MAPQUANT--'
+						;;
+
 						*${MAPCOLORS[2]}* )
-							#echo 3
+							for y in {0..3}; do
+								unset XY[$bx+$by+$y]
+							done
+
+							y=$((30-$by/100))
+
+							echo -ne "\033[$(($bx+1))G\033[${y}A    \033[${y}B"
+							let 'MAPQUANT--'
+							;;
+							
+						# Этот блок будет преобразован в другой цвет
+						*${MAPCOLORS[1]}* )
+							for y in {0..3}; do
+								XY[$bx+$by+$y]="\033[${MAPCOLORS[0]}m☲"
+							done
+							
+							y=$((30-$by/100))
+							
+							echo -ne "\033[$(($bx+1))G\033[${y}A\033[${MAPCOLORS[0]}m☲☲☲☲\033[${y}B"
 							;;
 					esac
-					
-					for y in {0..3}; do
-						unset XY[$bx+$by+$y]
-					done
-						
-					y=$((30-$by/100))
-					
-					echo -ne "\033[$(($bx+1))G\033[${y}A    \033[${y}B"
-					let 'MAPQUANT--'
 				fi
 			fi
 		fi
