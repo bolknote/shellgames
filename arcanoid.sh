@@ -16,6 +16,9 @@ MAPS=(\
 	"4 4 0 18  4 5 0 18  4 6 1 18  4 7 1 18  4 8 0 18  4 9 2 18  4 10 2 18"
 )
 
+# Количество блоков на уровне
+MAPQUANT=0
+
 # Координаты каретки
 CX=2 OCX=
 
@@ -48,9 +51,13 @@ which say &>/dev/null || function say {
 function DrawMap {
 	local i j x y t q map=(${MAPS[$1]}) c
 
+	MAPQUANT=0
+
 	for ((i=0; i<${#map[@]}; i+=4)); do
 		x=${map[$i]}   y=${map[$i+1]}
 		t=${map[$i+2]} q=${map[$i+3]}
+		
+		let "MAPQUANT+=$q"
 		
 		c="\033[${MAPCOLORS[$t]}m☲"
 
@@ -115,9 +122,7 @@ function PrintСarriage {
 		echo -ne "\033[$(($CX+1))G"
 	fi
 	
-	echo -ne "\033[38;5;160m☗\033[38;5;202m"
-	echo -n  $CBLOCKS
-	echo -ne "\033[38;5;160m☗"
+	echo -ne "\033[38;5;160m☗\033[38;5;202m$CBLOCKS\033[38;5;160m☗"
 
 	OCX=
 }
@@ -163,7 +168,7 @@ function PrintScreen {
 function PrintBall {
 	# Чистим предыдущую позицию
 	local y=$((30-$BY/100))
-	echo -ne "\033[$(($BX+1))G\033[${y}A \033[${y}B"
+	echo -ne "\033[$(($BX+1))G\033[${y}A${XY[$BX+100*$BY]:- }\033[${y}B"
 	
 	# Если мяч не двигается, следуем за кареткой
 	if [ $BAX -eq 0 ]; then
