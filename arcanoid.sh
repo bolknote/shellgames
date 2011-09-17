@@ -5,8 +5,16 @@
 # Выстрел
 # say -v Whisper -r 1200 00
 
-# Карта уровня
-declare -a MAP
+# Цвета блоков на уровнях
+MAPCOLORS=("38;5;34" "38;5;24" "38;5;204")
+
+# Карта уровней
+declare -a MAPS
+
+# X Y Тип (цвет) Количество
+MAPS=(\
+	"4 4 0 18  4 5 0 18  4 6 1 18  4 7 1 18  4 8 0 18  4 9 2 18  4 10 2 18"
+)
 
 # Координаты каретки
 CX=2 OCX=
@@ -36,6 +44,26 @@ which say &>/dev/null || function say {
 	:
 }
 
+# Отрисовка уровня по номеру
+function DrawMap {
+	local i j x y t q map=(${MAPS[$1]}) c
+
+	for ((i=0; i<${#map[@]}; i+=4)); do
+		x=${map[$i]}   y=${map[$i+1]}
+		t=${map[$i+2]} q=${map[$i+3]}
+		
+		c="\033[${MAPCOLORS[$t]}m☲"
+
+		while [ $q -gt 0 ]; do
+			for j in {0..1}; do
+				XY[$x+100*$y+$j]=$c
+				c=☲
+			done
+			let 'x+=4, q--'
+		done
+	done
+}
+
 # Обработка клавиатурных событий
 function KeyEvent {
 	case $1 in
@@ -57,22 +85,6 @@ function KeyEvent {
 			SpaceEvent
 		;;
 	esac
-}
-
-# Уровень рисуем в виртуальный экран
-function DrawLevel {
-	local b=☲ y x
-	local c=("38;5;34" "38;5;34" "38;5;24" "38;5;24" "38;5;34" "38;5;204" "38;5;204")
-	
-	for y in {4..10}; do
-		for x in {2..74}; do
-			if [ $(( ($x+1) % 3)) -ne 0 ]; then
-				XY[$y*100+$x]="\033[${c[$y-4]}m$b"
-			else
-				XY[$y*100+$x]=' '
-			fi
-		done
-	done
 }
 
 # Отрисовываем коробку в виртуальный экран
@@ -210,7 +222,7 @@ function Arcanoid {
 	exec 2>&-
 	
 	DrawBox
-	DrawLevel
+	DrawMap 0
 	PrintScreen
 	
 	trap 'KeyEvent LEFT'  USR1
