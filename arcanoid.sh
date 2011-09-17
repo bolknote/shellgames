@@ -167,7 +167,8 @@ function PrintBall {
 				let "BY+=$BAY"
 			# Дна
 			else
-				MissBall && return
+				MissBall
+				return
 			fi
 		else	
 			# Проверяем, не наткнулись ли мы на какое-то препятствие
@@ -218,7 +219,11 @@ function Arcanoid {
 	while true; do
 		PrintСarriage
 		PrintBall
-		sleep 0.04
+		sleep 0.02
+		PrintСarriage
+		sleep 0.02
+		PrintСarriage
+		sleep 0.02
 	done
 }
 
