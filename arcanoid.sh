@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Флаг для отрисованных временных объектов?
+
 # Выстрел
 # say -v Whisper -r 1200 00
 
@@ -7,7 +9,14 @@
 declare -a MAP
 
 # Координаты каретки
-CX=2
+CX=2 OCX=
+
+# Ширина средней части каретки (полная ширина минус 2)
+CW=3
+
+# Каретка, забитая пробелами и ☰, для ускорения
+CSPACES='          '
+CBLOCKS='☰☰☰☰☰☰☰☰☰☰'
 
 # Координаты мяча
 BX=4 BY=2900
@@ -27,10 +36,18 @@ which say &>/dev/null || function say {
 function KeyEvent {
 	case $1 in
 		LEFT)
-			[ $CX -gt 2 ] && let 'CX-=1'
+			if [ $CX -gt 2 ]; then
+				[ -z "$OCX" ] && OCX=$CX
+				
+				let "CX--"
+			fi
 		;;
 		RIGHT)
-			[ $CX -lt 70 ] && let 'CX+=1'
+			if [ $CX -lt 70 ]; then
+				[ -z "$OCX" ] && OCX=$CX				
+				
+				let "CX++"
+			fi
 		;;
 		SPACE)
 			SpaceEvent
@@ -38,30 +55,29 @@ function KeyEvent {
 	esac
 }
 
-# Уровень рисуем
+# Уровень рисуем в виртуальный экран
 function DrawLevel {
 	local b=☲ y x
 	local c=("38;5;34" "38;5;34" "38;5;24" "38;5;24" "38;5;34" "38;5;204" "38;5;204")
 	
 	for y in {4..10}; do
 		for x in {2..74}; do
-			if [ $(( ($x+1) % 3)) -eq 0 ]; then
-				XY[$y*100+$x]=' '
-			else
+			if [ $(( ($x+1) % 3)) -ne 0 ]; then
 				XY[$y*100+$x]="\033[${c[$y-4]}m$b"
+			else
+				XY[$y*100+$x]=' '
 			fi
 		done
 	done
 }
 
-# Отрисовываем коробку в виртуальный экран, стирая всё
-function Box {
+# Отрисовываем коробку в виртуальный экран
+function DrawBox {
 	local x y b="\033[38;5;8m♻"
-	XY=()
-
+	
 	for (( x=0; x<78; x+=2 )); do
 		XY[$x]=$b XY[$x+3100]=$b
-		XY[$x+1]=" " XY[$x+3101]=" "
+		XY[$x+1]=' ' XY[$x+3101]=' '
 	done
 	
 	for (( y=100; y<=3000; y+=100)) do
@@ -70,17 +86,26 @@ function Box {
 	done
 }
 
-# Перерисовка основных объектов экрана
-function DrawObjects {
-	Box
-	DrawLevel
+function DrawСarriage {
+	# Если предыдущая и текущая позиция совпадают, то надо только
+	# нарисовать каретку 
 	
-	XY[$CX+3000]="\033[38;5;160m☗"
-	XY[$CX+3001]="\033[38;5;202m☰"
-	XY[$CX+3002]="☰"
-	XY[$CX+3003]="☰"
-	XY[$CX+3004]="\033[38;5;160m☗"
+	if [ -z "$OCX" ]; then
+		echo -ne "\033[${CX}C"
+	else
+		# Стираем каретку с того места, где она была,
+		# дополнительные пробелы по краям стирают глюки
+		echo -ne "\033[$(($OCX-1))C${CSPACES:0:$CW+4}"
+		echo -ne "\033[100D\033[${CX}C"
+	fi
+	
+	echo -ne "\033[38;5;160m☗\033[38;5;202m"
+	echo -n  "${CBLOCKS:0:$CW}"
+	echo -ne "\033[38;5;160m☗"
 
+	# Возвращаем курсор
+	echo -ne "\033[100D"
+	OCX=
 }
 
 # Нажали на space
@@ -104,18 +129,20 @@ function MissBall {
 	BY=2900
 }
 
-# Рисуем экран
-function DrawScreen {
-	echo -ne "\033[32A"
-	
-	local x y
+# Рисуем виртуальный экран на экран
+function PrintScreen {
+	local x y xy d
 	
 	for y in {0..31}; do
 		for x in {0..76}; do
-			echo -ne "${XY[$x+$y*100]:- }"
+			xy=$(($x+$y*100))
+			echo -ne "${XY[$xy]:- }"
 		done
 		echo
 	done
+	
+	# Курсор в нижний левый угол (по x=0, по y=линия каретки)
+	echo -ne "\033[2A\033[100D"
 }
 
 # Рисуем мяч, должен рисоваться после всех объектов
@@ -164,15 +191,24 @@ function DrawBall {
 function Arcanoid {
 	exec 2>&-
 	
+	DrawBox
+	DrawLevel
+	PrintScreen
+	
 	trap 'KeyEvent LEFT'  USR1
 	trap 'KeyEvent RIGHT' USR2
 	trap 'KeyEvent SPACE' HUP
-	trap exit TERM
+	trap exit TERM	
 	
 	while true; do
-		DrawObjects
-		DrawBall
-		DrawScreen
+		DrawСarriage
+		sleep 0.02
+		sleep 0.02
+
+		#DrawObjects
+		#DrawBall
+		#DrawScreen
+		:
 	done
 }
 
@@ -194,8 +230,8 @@ stty -echo
 
 trap Restore EXIT
 
-# Убирам курсор, очищаем экран
-echo -en "\033[?25l\033[2J"
+# Убирам курсор
+echo -en "\033[?25l"
 
 Arcanoid & 
 CHILD=$!
