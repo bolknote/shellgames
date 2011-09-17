@@ -413,18 +413,18 @@ function Arcanoid {
 	exec 2>&-
 	CHLD=
 	
+	trap 'KeyEvent LEFT'  USR1
+	trap 'KeyEvent RIGHT' USR2
+	trap 'KeyEvent SPACE' HUP
+	trap "kill $PID" EXIT
+	trap exit TERM
+	
 	echo -e "\n"
 	
 	DrawBox
 	DrawMap $(($MAPNUMBER-1))
 	PrintScreen
-	PrintLives
-	
-	trap 'KeyEvent LEFT'  USR1
-	trap 'KeyEvent RIGHT' USR2
-	trap 'KeyEvent SPACE' HUP
-	trap "kill $PID" EXIT
-	trap exit TERM	
+	PrintLives	
 	
 	while true; do
 		[ -n "$GT" ] && PrintGift
@@ -467,7 +467,7 @@ trap 'Restore' EXIT HUP
 trap '' TERM
 
 # Убирам курсор
-echo -en "\033[?25l"
+echo -en "\033[?25l\033[0m"
 
 Arcanoid & 
 CHILD=$!
@@ -483,5 +483,5 @@ while read -n1 ch; do
 		0)
 		kill -HUP $CHILD
 		;;
-	esac
+	esac  &>/dev/null
 done
