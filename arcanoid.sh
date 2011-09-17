@@ -9,7 +9,7 @@
 declare -a MAP
 
 # Координаты каретки
-CX=2 OCX=
+CX=4 OCX=
 
 # Ширина средней части каретки (полная ширина минус 2)
 CW=3
@@ -36,7 +36,7 @@ which say &>/dev/null || function say {
 function KeyEvent {
 	case $1 in
 		LEFT)
-			if [ $CX -gt 2 ]; then
+			if [ $CX -gt 4 ]; then
 				[ -z "$OCX" ] && OCX=$CX
 				
 				let "CX--"
@@ -91,12 +91,12 @@ function PrintСarriage {
 	# нарисовать каретку 
 	
 	if [ -z "$OCX" ]; then
-		echo -ne "\033[${CX}G"
+		echo -ne "\033[$(($CX-1))G"
 	else
 		# Стираем каретку с того места, где она была,
 		# дополнительные пробелы по краям стирают глюки
-		echo -ne "\033[$(($OCX-1))G${CSPACES:0:$CW+4}"
-		echo -ne "\033[${CX}G"
+		echo -ne "\033[$(($OCX-2))G${CSPACES:0:$CW+4}"
+		echo -ne "\033[$(($CX-1))G"
 	fi
 	
 	echo -ne "\033[38;5;160m☗\033[38;5;202m"
@@ -147,11 +147,11 @@ function PrintScreen {
 function PrintBall {
 	# Чистим предыдущую позицию
 	local y=$((30-$BY/100))
-	echo -ne "\033[${BX}G\033[${y}A \033[${y}B"
+	echo -ne "\033[$(($BX-1))G\033[${y}A \033[${y}B"
 	
 	# Если мяч не двигается, следуем за кареткой
 	if [ $BAX -eq 0 ]; then
-		let BX="$CX+2+$CW/2"
+		let BX="$CX+1+$CW/2"
 	else		
 		local bx=$(($BX+$BAX))
 		local by=$(($BY+$BAY))
@@ -199,7 +199,7 @@ function PrintBall {
 	fi
 	
 	local y=$((30-$BY/100))
-	echo -ne "\033[${BX}G\033[${y}A\033[38;5;15m◯\033[${y}B"
+	echo -ne "\033[$(($BX-1))G\033[${y}A\033[38;5;15m◯\033[${y}B"
 }
 
 function Arcanoid {
