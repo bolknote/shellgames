@@ -158,34 +158,44 @@ function PrintBall {
 		local bx=$(($BX+$BAX))
 		local by=$(($BY+$BAY))
 		
-		# Мяч достиг дна
-		[ $BY -ge 3000 ] && MissBall && return
-	
-		# Проверяем, не наткнулись ли мы на какое-то препятствие
-		if [[ "${XY[$bx+$by]:-0}" == "0" ]]; then
-			# Нет
-			BX=$bx BY=$by
-		else			
-			(say -v Whisper -r 1000 1 &>/dev/null) &			
-			
-			local h=0 v=0
-			declare -i h v
-		
-			[[ "${XY[$bx+$by+100]:-0}" != "0" ]] && v=1
-			[[ $by > 100 && "${XY[$bx+$by-100]:-0}" != "0" ]] && v="1$v"
-			[[ "${XY[$bx+$by+1]:-0}" != "0" ]] && h=1
-			[[ $bx > 1 && "${XY[$bx+$by-1]:-0}" != "0" ]] && h="1$h"
-		
-			if [ $h -ge $v ]; then
+		# Мяч коснулся каретки или дна
+		if [[ $by -eq 3000 ]]; then
+			# Каретки
+			if [[ $bx -ge $CX && $bx -le $(($CX+$CW+2)) ]]; then
 				let BAY="-$BAY"
+				let "BX+=$BAX"
+				let "BY+=$BAY"
+			# Дна
+			else
+				MissBall && return
 			fi
-
-			if [ $h -le $v ]; then
-				let BAX="-$BAX"
-			fi
+		else	
+			# Проверяем, не наткнулись ли мы на какое-то препятствие
+			if [[ "${XY[$bx+$by]:-0}" == "0" ]]; then
+				# Нет
+				BX=$bx BY=$by
+			else			
+				(say -v Whisper -r 1000 1 &>/dev/null) &			
+			
+				local h=0 v=0
+				declare -i h v
 		
-			let BX="$BX+$BAX"
-			let BY="$BY+$BAY"
+				[[ "${XY[$bx+$by+100]:-0}" != "0" ]] && v=1
+				[[ $by > 100 && "${XY[$bx+$by-100]:-0}" != "0" ]] && v="1$v"
+				[[ "${XY[$bx+$by+1]:-0}" != "0" ]] && h=1
+				[[ $bx > 1 && "${XY[$bx+$by-1]:-0}" != "0" ]] && h="1$h"
+		
+				if [ $h -ge $v ]; then
+					let BAY="-$BAY"
+				fi
+
+				if [ $h -le $v ]; then
+					let BAX="-$BAX"
+				fi
+		
+				let "BX+=$BAX"
+				let "BY+=$BAY"
+			fi
 		fi
 	fi
 	
