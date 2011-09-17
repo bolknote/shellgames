@@ -1,7 +1,5 @@
 #!/bin/sh
 
-# Флаг для отрисованных временных объектов?
-
 # Выстрел
 # say -v Whisper -r 1200 00
 
@@ -22,6 +20,9 @@ MAPQUANT=0
 # Номер уровня
 MAPNUMBER=1
 
+# Прилипает ли мяч к ракетке
+STICKY=
+
 # Координаты каретки
 CX=2 OCX=
 
@@ -36,6 +37,9 @@ function CreateСarriage {
 
 CreateСarriage 5
 
+# Координаты падающего подарка и тип
+GX= GY= GT=
+
 # Координаты мяча
 BX=5 BY=2900
 
@@ -44,6 +48,10 @@ BAX=0 BAY=0
 
 # Координатная сетка виртуального экрана
 declare -a XY
+
+function say {
+	:
+}
 
 # Заменяем say, если её нет
 which say &>/dev/null || function say {
@@ -84,7 +92,7 @@ function KeyEvent {
 			fi
 		;;
 		RIGHT)
-			if [ $CX -lt 70 ]; then
+			if [ $CX -lt $((75-$CW)) ]; then
 				[ -z "$OCX" ] && OCX=$CX				
 				
 				let "CX++"
@@ -148,6 +156,15 @@ function MissBall {
 	BAX=0 BAY=0
 	let BX="$CX+4"
 	BY=2900
+	
+	# Сбрасываем размер ракетки
+	CreateСarriage 5	
+	
+	# Очищаем каретку
+	echo -ne "\033[2G"
+	printf "% 75s"
+	
+	STICKY=
 }
 
 # Рисуем виртуальный экран на экран
@@ -178,6 +195,27 @@ function Boom {
 	(say -v Whisper -r 1000 1 &>/dev/null) &
 }
 
+# Убрать блок
+function RemoveBlock {
+	local y
+	
+	for y in {0..3}; do
+		unset XY[$1+$2+$y]
+	done
+
+	y=$((30-$2/100))
+
+	echo -ne "\033[$(($1+1))G\033[${y}A    \033[${y}B"
+}
+
+# Роняем подарок
+function StartGift {
+	GX=$1
+	GY=$((30-$2/100+1))
+	
+	GT=S
+}
+
 # Рисуем мяч, должен рисоваться после всех объектов
 function PrintBall {
 	# Чистим предыдущую позицию
@@ -195,9 +233,16 @@ function PrintBall {
 		if [[ $by -eq 3000 ]]; then
 			# Каретки
 			if [[ $bx -ge $CX && $bx -le $(($CX+$CW)) ]]; then
-				let BAY="-$BAY"
-				let "BX+=$BAX"
-				let "BY+=$BAY"
+				if [ -z "$STICKY" ]; then
+					let BAY="-$BAY"
+					let "BX+=$BAX"
+					let "BY+=$BAY"
+				# Ракетка «липкая»
+				else
+					BAX=0 BAY=0
+					let BX="$CX+4"
+					BY=2900
+				fi
 			# Дна
 			else
 				MissBall
@@ -239,30 +284,8 @@ function PrintBall {
 					done
 					
 					# Выясняем цвет блока
-					case ${XY[$bx+$by]:5} in
-						*${MAPCOLORS[0]}* )
-						for y in {0..3}; do
-							unset XY[$bx+$by+$y]
-						done
-
-						y=$((30-$by/100))
-
-						echo -ne "\033[$(($bx+1))G\033[${y}A    \033[${y}B"
-						let 'MAPQUANT--'
-						;;
-
-						# Этот просто исчезает
-						*${MAPCOLORS[2]}* )
-							for y in {0..3}; do
-								unset XY[$bx+$by+$y]
-							done
-
-							y=$((30-$by/100))
-
-							echo -ne "\033[$(($bx+1))G\033[${y}A    \033[${y}B"
-							let 'MAPQUANT--'
-							;;
-							
+					case ${XY[$bx+$by]} in
+						
 						# Этот блок будет преобразован в другой цвет
 						*${MAPCOLORS[1]}* )
 							for y in {0..3}; do
@@ -273,6 +296,18 @@ function PrintBall {
 							
 							echo -ne "\033[$(($bx+1))G\033[${y}A\033[${MAPCOLORS[2]}m☲☲☲☲\033[${y}B"
 							;;
+
+							# Этот блок исчезает
+							*${MAPCOLORS[2]}* )
+								RemoveBlock $bx $by
+							;;
+							
+							# Этот блок исчезает, но даёт подарки
+							*${MAPCOLORS[0]}* )
+								RemoveBlock $bx $by
+								
+								[ -z "$GT" ] && StartGift $BX $by
+							;;
 					esac
 				fi
 			fi
@@ -281,6 +316,36 @@ function PrintBall {
 	
 	local y=$((30-$BY/100))
 	echo -ne "\033[$(($BX+1))G\033[${y}A\033[38;5;15m◯\033[${y}B"
+}
+
+# Рисуем падающий подарок
+function PrintGift {
+	echo -en "\033[$(($GX+1))G\033[${GY}A${XY[$GX+(30-$GY)*100]:- }"
+
+	if [ $GY -le 1 ]; then
+		echo -ne "\033[${GY}B"
+		
+		# Поймали подарок
+		if [[ $GX -ge $CX && $GX -le $(($CX+$CW)) ]]; then
+			case $GT in
+				W)
+					CreateСarriage 7
+					if [ $CX -gt $((75-$CW)) ]; then
+						CX=$((75-$CW))
+					fi
+
+				;;
+				
+				S)
+					STICKY=1
+				;;
+			esac
+		fi
+		GT=
+	else
+		let 'GY--'
+		echo -ne "\n\033[38;5;34m\033[$(($GX+1))G☲\033[${GY}B"
+	fi
 }
 
 function Arcanoid {
@@ -296,14 +361,18 @@ function Arcanoid {
 	trap exit TERM	
 	
 	while true; do
+		[ -n "$GT" ] && PrintGift
 		PrintСarriage
 		PrintBall
+		sleep 0.02; PrintСarriage
+		sleep 0.02; PrintСarriage
+		sleep 0.02; PrintСarriage
 		sleep 0.02
 		PrintСarriage
-		sleep 0.02
-		PrintСarriage
-		sleep 0.02
-		PrintСarriage
+		PrintBall
+		sleep 0.02; PrintСarriage
+		sleep 0.02; PrintСarriage
+		sleep 0.02; PrintСarriage
 		sleep 0.02
 	done
 }
