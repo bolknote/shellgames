@@ -19,7 +19,7 @@ CSPACES='          '
 CBLOCKS='☰☰☰☰☰☰☰☰☰☰'
 
 # Координаты мяча
-BX=4 BY=2900
+BX=5 BY=2900
 
 # Угол приращения мяча
 BAX=0 BAY=0
@@ -86,7 +86,7 @@ function DrawBox {
 	done
 }
 
-function DrawСarriage {
+function PrintСarriage {
 	# Если предыдущая и текущая позиция совпадают, то надо только
 	# нарисовать каретку 
 	
@@ -115,7 +115,7 @@ function SpaceEvent {
 		BAY=-100
 		[ $CX -gt 38 ] && BAX=1 || BAX=-1
 		
-		say -v Whisper -r 1000 forfor &>/dev/null
+		(say -v Whisper -r 1000 forfor &>/dev/null) &
 				
 		return
 	fi
@@ -142,14 +142,18 @@ function PrintScreen {
 	done
 	
 	# Курсор в нижний левый угол (по x=0, по y=линия каретки)
-	echo -ne "\033[2A\033[100D"
+	echo -ne "\033[2A\033[0G"
 }
 
 # Рисуем мяч, должен рисоваться после всех объектов
-function DrawBall {
+function PrintBall {
+	# Чистим предыдущую позицию
+	local x=$((30-$BY/100))
+	echo -ne "\033[${BX}G\033[${x}A \033[0G\033[${x}B"
+	
 	# Если мяч не двигается, следуем за кареткой
 	if [ $BAX -eq 0 ]; then
-		let BX="$CX+2"
+		let BX="$CX+2+$CW/2"
 	else		
 		local bx=$(($BX+$BAX))
 		local by=$(($BY+$BAY))
@@ -185,7 +189,8 @@ function DrawBall {
 		fi
 	fi
 	
-	XY[$BX+$BY]="\033[38;5;15m◯"
+	local x=$((30-$BY/100))
+	echo -ne "\033[${BX}G\033[${x}A\033[38;5;15m◯\033[0G\033[${x}B"
 }
 
 function Arcanoid {
@@ -201,14 +206,9 @@ function Arcanoid {
 	trap exit TERM	
 	
 	while true; do
-		DrawСarriage
-		sleep 0.02
-		sleep 0.02
-
-		#DrawObjects
-		#DrawBall
-		#DrawScreen
-		:
+		PrintСarriage
+		PrintBall
+		sleep 0.04
 	done
 }
 
