@@ -210,10 +210,14 @@ function RemoveBlock {
 
 # Роняем подарок
 function StartGift {
-	GX=$1
-	GY=$((30-$2/100+1))
+	local r=$(( $RANDOM % 10 ))
 	
-	GT=S
+	if [ $r -ge 8 ]; then
+		GX=$1
+		GY=$((30-$2/100+1))
+	
+		[ $r -eq 8 ] && GT=S || GT=W
+	fi
 }
 
 # Рисуем мяч, должен рисоваться после всех объектов
