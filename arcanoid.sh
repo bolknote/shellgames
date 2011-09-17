@@ -19,6 +19,9 @@ MAPS=(\
 # Количество блоков на уровне
 MAPQUANT=0
 
+# Номер уровня
+MAPNUMBER=1
+
 # Координаты каретки
 CX=2 OCX=
 
@@ -150,7 +153,9 @@ function MissBall {
 
 # Рисуем виртуальный экран на экран
 function PrintScreen {
-	local x y xy d
+	local x y xy
+	
+	(say -v Zarvox "eueir" &>/dev/null) &
 	
 	for y in {0..31}; do
 		for x in {0..76}; do
@@ -160,8 +165,13 @@ function PrintScreen {
 		echo
 	done
 	
+	# Пишем и стираем номер уровня
+	echo -ne "\033[20A\033[31G\033[48;5;15;38;5;16m  L E V E L  $MAPNUMBER  "
+	sleep 1.3
+	echo -ne "\033[31G\033[0m                             "
+	
 	# Курсор в нижний угол (по y=линия каретки)
-	echo -ne "\033[2A"
+	echo -ne "\033[2A\033[20B"
 }
 
 # Рисуем мяч, должен рисоваться после всех объектов
@@ -227,7 +237,7 @@ function Arcanoid {
 	exec 2>&-
 	
 	DrawBox
-	DrawMap 0
+	DrawMap $(($MAPNUMBER-1))
 	PrintScreen
 	
 	trap 'KeyEvent LEFT'  USR1
