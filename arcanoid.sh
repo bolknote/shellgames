@@ -341,7 +341,7 @@ function StartGift {
 		GY=$((30-$2/100+1))
 		
 		local gifts=(S W L)	
-		GT=${gifts[$r-18]}
+		GT=${gifts[$r-17]}
 	fi
 }
 
