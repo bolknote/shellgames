@@ -13,12 +13,12 @@ declare -a MAPS
 
 # X Y Тип (цвет) Количество
 MAPS=(\
+	"4 4 0 12  4 5 0 12  4 6 1 12  4 7 1 12  4 8 0 12  4 9 2 12  4 10 2 12"
+	
 	"13 2 1 2   8 3 1 1  24 3 1 1   5 4 1 1  27 4 1 1   5 5 1 1  27 5 1 1   8 6 1 1
 	 24 6 1 1  13 7 1 2  13 4 0 2  16 5 2 1   7 1 1 1  25 1 1 1  70 2 1 1  69 3 1 1
 	 33 5 1 6  35 6 1 1  35 7 1 1  33 8 1 1  44 6 1 1  44 7 1 1  42 8 1 1  68 4 1 1
 	 55 6 1 1  62 6 1 1  57 7 1 1  64 7 1 1  54 8 1 1  63 8 1 1  33 4 1 6"
-
-	"4 4 0 12  4 5 0 12  4 6 1 12  4 7 1 12  4 8 0 12  4 9 2 12  4 10 2 12"
 	
 	"28 2 1 4  16 3 1 2  52 3 1 2  10 4 0 1  22 4 0 1  34 4 0 2  52 4 0 1
 	 64 4 0 1   4 5 2 1  16 5 2 3  46 5 2 3  70 5 2 1   4 6 1 1  22 6 1 1
@@ -87,7 +87,7 @@ which say &>/dev/null || function say {
 function DrawMap {
 	local i j x y t q map=(${MAPS[$1]}) c
 
-	MAPQUANT=-1000
+	MAPQUANT=0
 
 	for ((i=0; i<${#map[@]}; i+=4)); do
 		x=${map[$i]}   y=${map[$i+1]}
@@ -104,6 +104,8 @@ function DrawMap {
 			let 'x+=6, q--'
 		done
 	done
+	
+	MAPQUANT=2
 }
 
 # Обработка клавиатурных событий
@@ -195,6 +197,8 @@ function MissBall {
 	PrintLives
 	
 	if [ $LIVES -le 0 ]; then
+		SoundGameover
+		
 		echo -ne "\033[18A\033[29G\033[48;5;15;38;5;16m  G A M E  O V E R  "
 		echo -ne "\033[20B\033[1G\033[0m"
 		kill -HUP $PID
@@ -227,6 +231,11 @@ function PrintScreen {
 	echo -ne "\033[2A\033[20B"
 }
 
+# Игра окончена
+function SoundGameover {
+	(say -v Zarvox "Loo Loo Loo" &>/dev/null) &
+}
+
 # Нажатие на Space
 function SoundSpace {
 	(say -v Whisper -r 1000 forfor &>/dev/null) &
@@ -255,6 +264,11 @@ function SoundOut {
 # Звук заставки
 function SoundWelcome {
 	(say -v Zarvox "eueir" &>/dev/null) &
+}
+
+# Звук, когда жизнь увеличивается
+function SoundLives {
+	(say -r 1200 -v  Princess yes &>/dev/null ) &
 }
 
 # Очистка уровня
@@ -436,13 +450,13 @@ function PrintGift {
 				
 				S)
 					STICKY=1
-					
 					SoundStick
 				;;
 				
 				L)
+					SoundLives
 					let 'LIVES++'
-					PrintLives
+					PrintLives	
 			esac
 		fi
 		GT=
