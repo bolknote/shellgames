@@ -487,7 +487,7 @@ function Arcanoid {
 	trap "kill $PID" EXIT
 	trap exit TERM
 	
-	echo -e "\n\n"
+	echo -e "\033[J\n\n"
 	
 	NextLevel	
 	
