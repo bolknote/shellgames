@@ -536,6 +536,19 @@ function NextLevel {
 	PrintScores 0
 }
 
+# Очистка клавиатурного буфера
+function ClearKeyboardBuffer {
+    # Быстро — через zsh
+    which zsh &>/dev/null && zsh -c 'while {} {read -rstk1 || break}' && return
+
+    # Медленно — через bash
+    local delta
+    while true; do
+        delta=`(time -p read -rs -n1 -t1) 2>&1 | awk 'NR==1{print $2}'`
+        [[ "$delta" == "0.00" ]] || break
+    done
+}
+
 function Arcanoid {
 	exec 2>&-
 	CHLD=
@@ -550,20 +563,19 @@ function Arcanoid {
 	
 	NextLevel	
 	
+	local i j
+	
 	while true; do
 		[ -n "$GT" ] && PrintGift
-		PrintСarriage
-		PrintBall
-		sleep 0.02; PrintСarriage
-		sleep 0.02; PrintСarriage
-		sleep 0.02; PrintСarriage
-		sleep 0.02
-		PrintСarriage
-		PrintBall
-		sleep 0.02; PrintСarriage
-		sleep 0.02; PrintСarriage
-		sleep 0.02; PrintСarriage
-		sleep 0.02
+		
+		for i in {1..2}; do
+			PrintСarriage
+			PrintBall
+			for j in {1..4}; do
+				sleep 0.02; PrintСarriage
+			done
+			sleep 0.02
+		done
 	done
 }
 
@@ -577,7 +589,10 @@ function Restore {
 	(bind '"\r":accept-line') &>/dev/null
 	CHILD=
 	
-	trap '' EXIT HUP	
+	trap '' EXIT HUP
+	
+	ClearKeyboardBuffer	
+	
 	exit
 }
 
