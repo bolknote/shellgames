@@ -35,9 +35,14 @@ MAPS=(\
 	"10 2 1 10  10 9 1 10  10 3 1 1  64 3 1 1  10 4 1 1  64 4 1 1  10 5 1 1
 	 64 5 1 1  10 6 1 1  64 6 1 1  10 7 1 1  64 7 1 1  10 8 1 1  64 8 1 1
 	 16 4 2 8  16 7 2 8  16 5 2 1  16 6 2 1  58 5 2 1  58 6 2 1  34 5 0 2  34 6 0 2"
+	
+	"6 2 0 1  6 3 0 1  6 4 0 1  6 5 0 1  6 6 0 1  6 7 0 1  6 8 0 1  6 9 0 1
+	 24 2 0 1  24 3 0 1  24 4 0 1  24 5 0 1  24 6 0 1  24 7 0 1  24 8 0 1  24 9 0 1
+	 15 7 0 1  12 8 0 2  34 2 1 2  34 9 1 2  37 3 1 1  37 4 1 1  37 5 1 1  37 6 1 1
+	 37 7 1 1  37 8 1 1  50 2 2 1  50 3 2 1  50 4 2 1  50 5 2 1  50 6 2 1  50 7 2 1
+	 50 8 2 1  50 9 2 1  67 2 2 1  67 3 2 1  67 4 2 1  67 5 2 1  67 6 2 1  67 7 2 1
+	 67 8 2 1  67 9 2 1  56 4 2 1  57 5 2 1  59 6 2 1  61 7 2 1"
 )
-
-MAPS=("4 4 0 1")
 
 # Счёт
 SCORE=0
@@ -106,8 +111,6 @@ function DrawMap {
 			let 'x+=6, q--'
 		done
 	done
-	
-	MAPQUANT=1
 }
 
 # Обработка клавиатурных событий
@@ -212,6 +215,10 @@ function MissBall {
 
 # Игрок победил
 function YouWin {
+	DrawBox
+	DrawMap $(($MAPNUMBER-1))
+	PrintScreen	WIN
+	
 	echo -ne "\033[18A\033[31G\033[48;5;15;38;5;16m  Y O U  W I N  "
 	echo -ne "\033[20B\033[1G\033[0m"
 	kill -HUP $PID
@@ -224,7 +231,7 @@ function YouWin {
 function PrintScreen {
 	local x y xy
 	
-	SoundWelcome
+	[ -z "$1" ] && SoundWelcome
 	
 	for y in {0..31}; do
 		for x in {0..76}; do
@@ -234,10 +241,12 @@ function PrintScreen {
 		echo
 	done
 	
-	# Пишем и стираем номер уровня
-	echo -ne "\033[20A\033[31G\033[48;5;15;38;5;16m  L E V E L  $MAPNUMBER  "
-	sleep 1.3
-	echo -ne "\033[31G\033[0m                             "
+	if [ -z "$1" ]; then	
+		# Пишем и стираем номер уровня
+		echo -ne "\033[20A\033[31G\033[48;5;15;38;5;16m  L E V E L  $MAPNUMBER  "
+		sleep 1.3
+		echo -ne "\033[31G\033[0m                             "
+	fi
 	
 	# Курсор в нижний угол (по y=линия каретки)
 	echo -ne "\033[2A\033[20B"
@@ -310,12 +319,12 @@ function RemoveBlock {
 	# Разбили все блоки, следующий уровень
 	if [ $MAPQUANT -le 0 ]; then
 		let 'MAPNUMBER++'
+		ClearLevel
 		
-		if [ $MAPNUMBER -gt ${#MAPS[@]} ]; then
+		if [ $MAPNUMBER -ge ${#MAPS[@]} ]; then
 			# Игра окончена, игрок выиграл
 			YouWin !
 		else
-			ClearLevel
 			NextLevel
 		fi
 	fi
