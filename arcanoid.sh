@@ -75,7 +75,7 @@ which say &>/dev/null || function say {
 function DrawMap {
 	local i j x y t q map=(${MAPS[$1]}) c
 
-	MAPQUANT=0
+	MAPQUANT=-1000
 
 	for ((i=0; i<${#map[@]}; i+=4)); do
 		x=${map[$i]}   y=${map[$i+1]}
@@ -245,6 +245,16 @@ function SoundWelcome {
 	(say -v Zarvox "eueir" &>/dev/null) &
 }
 
+# Очистка уровня
+function ClearLevel {
+	local i
+	for i in {1..30}; do
+		printf "\033[1G% 75s\033[1A"
+	done
+	
+	echo -ne "\033[1G"
+}
+
 # Убрать блок
 function RemoveBlock {
 	local y
@@ -262,6 +272,7 @@ function RemoveBlock {
 	# Разбили все блоки, следующий уровень
 	if [ $MAPQUANT -le 0 ]; then
 		let 'MAPNUMBER++'
+		ClearLevel
 		NextLevel
 	fi
 }
@@ -444,6 +455,8 @@ function PrintScores {
 
 # Переход на следующий уровень
 function NextLevel {
+	XY=()
+    CreateСarriage 5
 	CX=2 OCX=
 	GX= GY= GT=
 	BX=5 BY=2900
@@ -458,7 +471,7 @@ function NextLevel {
 }
 
 function Arcanoid {
-	exec 2>&-
+	#exec 2>&-
 	CHLD=
 	
 	trap 'KeyEvent LEFT'  USR1
