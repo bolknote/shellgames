@@ -105,7 +105,7 @@ function DrawMap {
 		done
 	done
 	
-	MAPQUANT=2
+	MAPQUANT=1
 }
 
 # Обработка клавиатурных событий
@@ -208,6 +208,16 @@ function MissBall {
 	fi
 }
 
+# Игрок победил
+function YouWin {
+	echo -ne "\033[18A\033[31G\033[48;5;15;38;5;16m  Y O U  W I N  "
+	echo -ne "\033[20B\033[1G\033[0m"
+	kill -HUP $PID
+	while true; do
+		sleep 0.3
+	done
+}
+
 # Рисуем виртуальный экран на экран
 function PrintScreen {
 	local x y xy
@@ -299,7 +309,13 @@ function RemoveBlock {
 	if [ $MAPQUANT -le 0 ]; then
 		let 'MAPNUMBER++'
 		ClearLevel
-		NextLevel
+		
+		if [ ${#MAPS} -lt $MAPNUMBER ]; then
+			# Игра окончена, игрок выиграл
+			YouWin !
+		else
+			NextLevel
+		fi
 	fi
 }
 
