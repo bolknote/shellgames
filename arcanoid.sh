@@ -215,6 +215,7 @@ function MissBall {
 
 # Игрок победил
 function YouWin {
+	SoundWin
 	DrawBox
 	DrawMap $(($MAPNUMBER-1))
 	PrintScreen	WIN
@@ -290,6 +291,11 @@ function SoundWelcome {
 # Звук, когда жизнь увеличивается
 function SoundLives {
 	(say -r 1200 -v  Princess yes &>/dev/null ) &
+}
+
+# Победитель
+function SoundWin {
+	(say -v Hysterical 'Das kewl man!' &>/dev/null) &
 }
 
 # Очистка уровня
@@ -499,9 +505,16 @@ function PrintLives {
 	echo -ne "\033[38;5;160m☗\033[38;5;202m$CBLOCKS\033[38;5;160m☗       \033[31B"
 }
 
+# Copyright
+function PrintCopy {
+	echo -ne "\033[2B\033[52G\033[0;1mhttp://bolknote.ru © 2011\033[2A"
+}
+
 # Печать счёта
 function PrintScores {
 	let "SCORE+=${1:-1}"
+	
+	PrintCopy
 	
 	echo -ne "\033[31A\033[$((69-${#SCORE}))G\033[0mScore: \033[1m$SCORE\033[31B"
 }
