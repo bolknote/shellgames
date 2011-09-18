@@ -37,6 +37,8 @@ MAPS=(\
 	 16 4 2 8  16 7 2 8  16 5 2 1  16 6 2 1  58 5 2 1  58 6 2 1  34 5 0 2  34 6 0 2"
 )
 
+MAPS=("4 4 0 1")
+
 # Счёт
 SCORE=0
 
@@ -308,12 +310,12 @@ function RemoveBlock {
 	# Разбили все блоки, следующий уровень
 	if [ $MAPQUANT -le 0 ]; then
 		let 'MAPNUMBER++'
-		ClearLevel
 		
-		if [ ${#MAPS} -lt $MAPNUMBER ]; then
+		if [ $MAPNUMBER -gt ${#MAPS[@]} ]; then
 			# Игра окончена, игрок выиграл
 			YouWin !
 		else
+			ClearLevel
 			NextLevel
 		fi
 	fi
