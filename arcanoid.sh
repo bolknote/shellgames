@@ -611,16 +611,81 @@ echo -en "\033[?25l\033[0m"
 Arcanoid & 
 CHILD=$!
 
-while read -n1 ch; do
-	case `printf "%d" "'$ch"` in
-		97) 
+# Клавиатурные комбинации извстной длины
+SEQLEN=(1b5b4. [2-7]. [cd]... [89ab].{5} f.{7})
+
+# Проверка совпадения с известной клавиатурной комбинацией
+function CheckCons {
+    local i
+
+    for i in ${SEQLEN[@]}; do
+        if [[ $1 =~ ^$i ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+# Функция реакции на клавиатуру, вызывает React на каждую нажатую клавишу
+function PressEvents {
+    local real code action ch
+
+    # Цикл обработки клавиш, здесь считываются коды клавиш,
+    # по паузам между нажатиями собираются комбинации и известные
+    # обрабатываются сразу
+    while true; do
+        # измеряем время выполнения команды read и смотрим код нажатой клавиши
+        # akw NR==1||NR==4 забирает только строку №1 (там время real) и №4 (код клавиши)
+        eval $( (time -p read -r -s -n1 ch; printf 'code %d\n' "'$ch") 2>&1 |
+        awk 'NR==1||NR==4 {print $1 "=" $2}' | tr '\r\n' '  ')
+
+        # read возвращает пусто для Enter и пробела, присваиваем им код 20,
+        # а так же возвращаются отрицательные коды для UTF8
+        if [ "$code" = 0 ]; then
+            React 20
+        else
+             [ $code -lt 0 ] && code=$((256+$code))
+
+             code=$(printf '%02x' $code)
+        fi
+
+        # Если клавиши идут подряд (задержки по времени нет)
+        if [ $real = 0.00 ]; then
+            seq="$seq$code"
+
+            if CheckCons $seq; then
+                React $seq
+                seq=
+            fi
+
+        # Клавиши идут с задержкой (пользователь не может печатать с нулевой задержкой),
+        # значит последовательность собрана, надо начинать новую
+        else
+            [ "$seq" ] && React $seq
+            seq=$code
+
+            # возможно последовательность состоит из одного символа
+            if CheckCons $seq; then
+                React $seq
+                seq=
+            fi
+        fi
+    done
+}
+
+function React {
+	case $1 in
+		1b5b44) 
 		kill -USR1 $CHILD
 		;;
-		115)
+		1b5b43)
 		kill -USR2 $CHILD
 		;;
-		0)
+		*)
 		kill -HUP $CHILD
 		;;
 	esac  &>/dev/null
-done
+}
+
+PressEvents
