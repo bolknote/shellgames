@@ -367,16 +367,17 @@ function PrintBall {
 			# Каретки
 			if [[ $bx -ge $CX && $bx -le $(($CX+$CW)) ]]; then
 				if [ -z "$STICKY" ]; then
+					SoundBoom
 					let BAY="-$BAY"
 					let "BX+=$BAX"
 					let "BY+=$BAY"
 				# Ракетка «липкая»
 				else
+					SoundStick
+					
 					BAX=0 BAY=0
 					let BX="$CX+4"
 					BY=2900
-					
-					SoundStick
 				fi
 			# Дна
 			else
@@ -571,7 +572,7 @@ function Arcanoid {
 		for i in {1..2}; do
 			PrintСarriage
 			PrintBall
-			for j in {1..4}; do
+			for j in {1..5}; do
 				sleep 0.02; PrintСarriage
 			done
 			sleep 0.02
