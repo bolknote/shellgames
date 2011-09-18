@@ -21,6 +21,9 @@ MAPS=(\
 	 70 9 2 1  16 10 1 8"
 )
 
+# Счёт
+SCORE=0
+
 # Количество жизней
 LIVES=5
 
@@ -33,9 +36,6 @@ MAPNUMBER=1
 # Прилипает ли мяч к ракетке
 STICKY=
 
-# Координаты каретки
-CX=2 OCX=
-
 # Создание каретки заданной длины, заполняем глобальные
 # переменные
 function CreateСarriage {
@@ -46,6 +46,9 @@ function CreateСarriage {
 }
 
 CreateСarriage 5
+
+# Координаты каретки
+CX=2 OCX=
 
 # Координаты падающего подарка и тип
 GX= GY= GT=
@@ -345,11 +348,14 @@ function PrintBall {
 							y=$((30-$by/100))
 							
 							echo -ne "\033[$(($bx+1))G\033[${y}A\033[${MAPCOLORS[2]}m☲☲☲☲\033[${y}B"
+							
+							PrintScores 2
 							;;
 
 							# Этот блок исчезает
 							*${MAPCOLORS[2]}* )
 								RemoveBlock $bx $by
+								PrintScores
 							;;
 							
 							# Этот блок исчезает, но даёт подарки
@@ -357,6 +363,7 @@ function PrintBall {
 								RemoveBlock $bx $by
 								
 								[ -z "$GT" ] && StartGift $BX $by
+								PrintScores
 							;;
 					esac
 				fi
@@ -377,6 +384,8 @@ function PrintGift {
 		
 		# Поймали подарок
 		if [[ $GX -ge $CX && $GX -le $(($CX+$CW)) ]]; then
+			PrintScores 5
+			
 			case $GT in
 				W)
 					CreateСarriage 7
@@ -410,8 +419,30 @@ function PrintGift {
 
 # Печать жизней
 function PrintLives {
-	echo -ne "\033[31A\033[3G\033[0m${LIVES} "
+	echo -ne "\033[31A\033[3G\033[0;1m${LIVES} "
 	echo -ne "\033[38;5;160m☗\033[38;5;202m$CBLOCKS\033[38;5;160m☗       \033[31B"
+}
+
+# Печать счёта
+function PrintScores {
+	let "SCORE+=${1:-1}"
+	
+	echo -ne "\033[31A\033[$((69-${#SCORE}))G\033[0mScore: \033[1m$SCORE\033[31B"
+}
+
+# Переход на следующий уровень
+function NextLevel {
+	CX=2 OCX=
+	GX= GY= GT=
+	BX=5 BY=2900
+	BAX=0 BAY=0	
+	STICKY=
+	
+	DrawBox
+	DrawMap $(($MAPNUMBER-1))
+	PrintScreen
+	PrintLives
+	PrintScores 0
 }
 
 function Arcanoid {
@@ -424,12 +455,9 @@ function Arcanoid {
 	trap "kill $PID" EXIT
 	trap exit TERM
 	
-	echo -e "\n"
+	echo -e "\n\n"
 	
-	DrawBox
-	DrawMap $(($MAPNUMBER-1))
-	PrintScreen
-	PrintLives	
+	NextLevel	
 	
 	while true; do
 		[ -n "$GT" ] && PrintGift
