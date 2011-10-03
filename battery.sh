@@ -45,10 +45,7 @@ function GetPlatform {
         fi
     fi
 
-    local getprg=
-
-    which -s curl && getprg=curl
-    which -s wget && getprg='wget -qO-'
+    getprg=`type -p curl` || getprg=`type -p wget`
 
     if [ -z "$getprg" ]; then
         echo NA
