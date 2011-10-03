@@ -47,7 +47,7 @@ function GetPlatform {
 
     local getprg=
 
-    which -s curl && getprg=curl ||
+    which -s curl && getprg=curl
     which -s wget && getprg='wget -qO-'
 
     if [ -z "$getprg" ]; then
