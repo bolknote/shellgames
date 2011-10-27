@@ -1,4 +1,7 @@
 #!/bin/bash
+# «Арканоид» на bash. Евгений Степанищев http://bolknote.ru/ 2011
+# Bash Arcanoid. Copyright by Evgeny Stepanischev http://bolknote.ru/ 2011
+
 PID=$$
 
 # Цвета блоков на уровнях
