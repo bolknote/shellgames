@@ -1,4 +1,7 @@
 #!/bin/bash
+# График занятости каналов WiFi на bash. Евгений Степанищев http://bolknote.ru/ 2011
+# Bash simple WiFi channels scanner. Copyright by Evgeny Stepanischev http://bolknote.ru/ 2011
+
 declare -a dots
 
 TEMP=$(mktemp -t `basename "$0"`)

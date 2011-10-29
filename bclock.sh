@@ -1,4 +1,6 @@
 #!/bin/bash
+# Бинарные часы на bash. Евгений Степанищев http://bolknote.ru/ 2011
+# Bash Binary clock. Copyright by Evgeny Stepanischev http://bolknote.ru/ 2011
 
 declare -a xy
 

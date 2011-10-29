@@ -1,4 +1,7 @@
 #!/bin/bash
+# Информация о батарейке на bash. Евгений Степанищев http://bolknote.ru/ 2011
+# Bash Battery Info. Copyright by Evgeny Stepanischev http://bolknote.ru/ 2011
+
 
 # Хост для информации о серийнике
 HOST='www.chipmunk.nl'
