@@ -61,6 +61,11 @@ function ntfsenable11 {
     echo ' done'
 
     unzip "$TEMP/arch.zip" -d "$TEMP" 2>&- 1>&-
+    [ `md5 "$TEMP/NTFS_Enabler/ntfs"` == a88031b3257379257086af017891f229 ] || (
+        echo "Error: invalid checksum NTFS enabler bundle"
+        exit
+    )
+
     ntfsenable10
 
     sudo /bin/mv "$NLIBRA" "${NLIBRA}_orig"
