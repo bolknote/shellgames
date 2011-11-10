@@ -1,4 +1,6 @@
 #!/bin/bash
+# Enable built-in Mac OS NTFS driver for writing
+# Very UNSAFE!!!
 
 ARCH=`uname -r | cut -d. -f1`
 NMOUNT=/sbin/mount_ntfs
