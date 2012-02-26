@@ -33,7 +33,7 @@ function ClearHosts {
 function NewSites {
     local host
 
-    for host in `/bin/ls -1d "$MYSITES"*/ | /usr/bin/egrep -o '/([a-z0-9]+\.)*[a-z0-9]+/$'`; do
+    for host in `/bin/ls -1d "$MYSITES"*/ 2>&- | /usr/bin/egrep -o '/([a-z0-9]+\.)*[a-z0-9]+/$'`; do
         echo "$MYIP ${host:1:-1} $MAGIC"
     done
 }
@@ -75,7 +75,7 @@ function SmthChanged {
 
 # Подсчёт контрольной суммы папок в домашней папке Apache
 function CheckNew {
-    /bin/ls -1d "$MYSITES"*/ | md5
+    /bin/ls -1d "$MYSITES"*/ 2>&- | md5
 }
 
 # Убираем всё, что записали на выходе
