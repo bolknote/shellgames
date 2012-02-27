@@ -75,7 +75,7 @@ function SmthChanged {
 
 # Подсчёт контрольной суммы папок в домашней папке Apache
 function CheckNew {
-    /bin/ls -1d "$MYSITES"*/ 2>&- | md5
+    /bin/ls -1d "$MYSITES"*/ 2>&- | /sbin/md5
 }
 
 # Убираем всё, что записали на выходе
