@@ -102,10 +102,10 @@ function CheckLoop {
     done
 }
 
-if [[ `whoami` == root ]]; then
+if [[ `/usr/bin/whoami` == root ]]; then
     trap Restore EXIT
     CheckLoop
 else
-    sudo "$0"
+    /usr/bin/sudo "$0"
 fi
 
