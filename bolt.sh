@@ -20,6 +20,7 @@ NameVirtualHost %host%:80\n
 \tServerAdmin $(/usr/bin/whoami)@%host%\n
 \tDocumentRoot "$MYSITES%host%"\n
 \tServerName %host%\n
+\tServerAlias www.%host%\n
 </VirtualHost>\n
 PATTERN
 )
@@ -35,6 +36,7 @@ function NewSites {
 
     for host in `/bin/ls -1d "$MYSITES"*/ 2>&- | /usr/bin/egrep -o '/([a-z0-9]+\.)*[a-z0-9]+/$'`; do
         echo "$MYIP ${host:1:-1} $MAGIC"
+        echo "$MYIP www.${host:1:-1} $MAGIC"
     done
 }
 
