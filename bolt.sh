@@ -35,8 +35,8 @@ function NewSites {
     local host
 
     for host in `/bin/ls -1d "$MYSITES"*/ 2>&- | /usr/bin/egrep -o '/([a-z0-9]+\.)*[a-z0-9]+/$'`; do
-        echo "$MYIP ${host:1:-1} $MAGIC"
-        echo "$MYIP www.${host:1:-1} $MAGIC"
+        echo "$MYIP ${host//\//} $MAGIC"
+        echo "$MYIP www.${host//\//} $MAGIC"
     done
 }
 
