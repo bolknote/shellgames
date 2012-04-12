@@ -6,3 +6,4 @@ block.sh - bash binary clock
 chess.sh - bash network chess game (controls: ←, →, ↓, ↑ and Space)
 wifi.sh - bash WiFi signal levels (Mac only)
 mac_ntfs_write_enabler.sh - enable NTFS write (Mac only, very UNSAFE)
+checkflashback.sh - check is Mac OS FlashBack virus infected 
