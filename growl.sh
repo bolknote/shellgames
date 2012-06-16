@@ -9,7 +9,7 @@ function GetMyIP {
     local route=`/sbin/route -n get default 2>&-`
 
     if [ -z "$route" ]; then
-        # Либо, первый попавшийся
+        # Либо, первый попавшийся, если нет IP по-умолчанию
         /sbin/ifconfig |
             /usr/bin/awk '/^[\t ]*inet/ {print $2}' |
             /usr/bin/egrep -v '^(127\.|::1)' |
