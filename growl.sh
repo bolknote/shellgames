@@ -5,14 +5,14 @@ NOTIFYNAME="Shell Message"
 MESSAGE="Hi all!"
 
 # Получаем наш IP 
-function GetMyIP {
+function _GetMyIP {
     local route=`/sbin/route -n get default 2>&-`
 
     if [ -z "$route" ]; then
         # Либо, первый попавшийся, если нет IP по-умолчанию
         /sbin/ifconfig |
             /usr/bin/awk '/^[\t ]*inet/ {print $2}' |
-            /usr/bin/egrep -v '^(127\.|::1)' |
+            (/usr/bin/egrep -v '^(127\.|::1)' || echo 127.0.0.1) |
             /usr/bin/head -n1
 
     else
@@ -26,7 +26,7 @@ function GetMyIP {
 
 # Отсылка сообщение в growl через telnet при помощи expect
 # Возвращает «-OK» в случае успеха
-function GrowlSend {
+function _GrowlSend {
     local ip="$1"
     local port="$2"
 
@@ -57,14 +57,14 @@ function GrowlSend {
 #  GlowSendNotify "" "" 'Привет всем!'
 function GrowlSendNotify {
     local ip="$1"
-    [ -z "$ip" ] && ip=$(GetMyIP)
+    [ -z "$ip" ] && ip=$(_GetMyIP)
 
     local -i port="$2"
     [ $port -gt 0 ] || port=23053
 
     local text="$3"
 
-    res=`GrowlSend "$ip" $port <<NOTIFY
+    res=`_GrowlSend "$ip" $port <<NOTIFY
 GNTP/1.0 NOTIFY NONE
 Application-Name: $APPLICATION
 Notification-Name: $NOTIFYNAME
@@ -82,14 +82,14 @@ NOTIFY`
 #  GlowSendRegister
 function GrowlSendRegister {
     local ip="$1"
-    [ -z "$ip" ] && ip=$(GetMyIP)
+    [ -z "$ip" ] && ip=$(_GetMyIP)
 
     local -i port="$2"
     [ $port -gt 0 ] || port=23053
 
     local text="$3"
 
-    res=`GrowlSend "$ip" $port <<REGISTER
+    res=`_GrowlSend "$ip" $port <<REGISTER
 GNTP/1.0 REGISTER NONE
 Application-Name: $APPLICATION
 Notifications-Count: 1
