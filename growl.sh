@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Работа с Growl на bash. Евгений Степанищев http://bolknote.ru/ 2012
+# Growl communication in Bash. Copyright by Evgeny Stepanischev http://bolknote.ru/ 2012
+
 APPLICATION="My Shell Script"
 NOTIFYNAME="Shell Message"
 MESSAGE="Hi all!"
