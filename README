@@ -1,6 +1,7 @@
 Тут находся всякие мои заигрывания с Bash и другими shell
 
-bolt.sh — программа, следящая за изменением папки с сайтами на Маке и заводящая сайты в Apache и hosts 
+bolt.sh — программа, следящая за изменением папки с сайтами на Маке и заводящая сайты в Apache и hosts
+growl.sh - работаем с Growl на MacOS через протокол GNTP v1
 battery.sh - bash analog of batteryCoconut program (Mac only)
 block.sh - bash binary clock
 chess.sh - bash network chess game (controls: ←, →, ↓, ↑ and Space)
