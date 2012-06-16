@@ -64,12 +64,14 @@ function GrowlSendNotify {
 
     local text="$3"
 
-    GrowlSend "$ip" $port <<NOTIFY
+    res=`GrowlSend "$ip" $port <<NOTIFY
 GNTP/1.0 NOTIFY NONE
 Application-Name: $APPLICATION
 Notification-Name: $NOTIFYNAME
 Notification-Title: $text
-NOTIFY
+NOTIFY`
+
+    [ "$res" == "-OK" ] && return 0 || return 1
 }
 
 # Регистрируем своё приложение
@@ -87,22 +89,22 @@ function GrowlSendRegister {
 
     local text="$3"
 
-    GrowlSend "$ip" $port <<REGISTER
+    res=`GrowlSend "$ip" $port <<REGISTER
 GNTP/1.0 REGISTER NONE
 Application-Name: $APPLICATION
 Notifications-Count: 1
 Notification-Enabled: True 
 
 Notification-Name: $NOTIFYNAME
-REGISTER
+REGISTER`
+
+    [ "$res" == "-OK" ] && return 0 || return 1
 }
+
 
 # Пробуем отослать сообщение
 cmd='GrowlSendNotify "" "" "'"$MESSAGE"'"'
-response=`eval $cmd`
 
-# Если не получилось, то пробуем сначала зарегистрировать его
-if [[ "$response" != "-OK" ]]; then
-    GrowlSendRegister >/dev/null
-    eval "$cmd" >/dev/null
-fi
+eval $cmd || (
+    GrowlSendRegister && eval $cmd
+)
