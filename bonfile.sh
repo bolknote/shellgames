@@ -5,7 +5,6 @@
 
 DNSSD=/usr/bin/dns-sd
 EXPECT=/usr/bin/expect
-BASE64=/usr/bin/base64
 PS=/bin/ps
 SORT=/usr/bin/sort
 NC=/usr/bin/nc
