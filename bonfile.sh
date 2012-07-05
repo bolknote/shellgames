@@ -54,7 +54,7 @@ function Client {
     local info=($($EXPECT <<CMDS | $AWK 'NR>2 {print $7 " " $8}' | $SORT -u | $TR -d '\r' | $HEAD -n1
         spawn -noecho $DNSSD -B $SNAME
         expect Timestamp
-        expect "$SNAME"
+        expect -- "$SNAME"
         exit
 CMDS))
 
