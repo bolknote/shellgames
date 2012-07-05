@@ -15,24 +15,48 @@ XARGS=/usr/bin/xargs
 GZIP=/usr/bin/gzip
 MD5=/sbin/md5
 TEE=/usr/bin/tee
+IPCONFIG=/usr/sbin/ipconfig
+EGREP=/usr/bin/egrep
+CUT=/usr/bin/cut
+HEAD=/usr/bin/head
+IFCONFIG=/sbin/ifconfig
+ROUTE=/sbin/route
+TR=/usr/bin/tr
 
 GZIPLEVEL=3
 PORT=1111
 SNAME=_bolk-fileshare._tcp
 
+# Получаем наш IP 
+function _GetMyIP {
+    local route=`$ROUTE -n get default 2>&-`
+
+    if [ -z "$route" ]; then
+        # Либо, первый попавшийся, если нет IP по-умолчанию
+        $IFCONFIG |
+            $AWK '/^[\t ]*inet/ {print $2}' |
+            ($EGREP -v '^(127\.|::1)' || echo 127.0.0.1) |
+            $HEAD -n1
+
+    else
+        # Либо IP по-умолчанию в системе, если он назначен
+        echo "$route" |
+            $EGREP -oi 'interface: [^ ]+' |
+            $CUT -c12- |
+            $XARGS $IPCONFIG getifaddr
+    fi
+}
 
 function Client {
-    local info=($($EXPECT <<CMDS | $AWK 'NR>2 {print $5 " " $7}' | $SORT -u 
+    local info=($($EXPECT <<CMDS | $AWK 'NR>2 {print $7 " " $8}' | $SORT -u | $TR -d '\r'
         spawn -noecho $DNSSD -B $SNAME
         expect Timestamp
         expect "$SNAME"
         exit
 CMDS))
 
-    local host=${info[0]}
-    local sum=${info[1]}
-
-    [ "$host"=="local." ] && host=localhost
+    local sum=${info[0]}
+    local host=${info[1]}
 
     echo -n "Found file server on $host:$PORT. Getting file... " >&2
 
@@ -47,18 +71,18 @@ CMDS))
     fi
 }
 
-function ClearServer {
+function _ClearServer {
     # kill dns-sd
     $PS -f | $AWK "\$2==$1 && /$SNAME/ { print \$2 }" | $XARGS $KILL
 }
 
 function Server {
     if [ -e "$1" ]; then
-        local sum=$($MD5 -q "$1")
+        local info=$($MD5 -q "$1")" "$(_GetMyIP)
 
-        $DNSSD -R "$sum" "$SNAME" . $PORT >/dev/null &
+        $DNSSD -R "$info" "$SNAME" . $PORT >/dev/null &
     
-        trap "ClearServer $!" EXIT
+        trap "_ClearServer $!" EXIT
 
         $GZIP -nc$GZIPLEVEL "$1" | $NC -l $PORT
     else
