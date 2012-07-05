@@ -3,6 +3,7 @@
 # Передача файлов на Баше с использованием Бонжура. Евгений Степанищев http://bolknote.ru/ 2012
 # Bash file transfer using Bonjour. Copyright by Evgeny Stepanischev http://bolknote.ru/ 2012
 
+# пути до утилит
 DNSSD=/usr/bin/dns-sd
 EXPECT=/usr/bin/expect
 PS=/bin/ps
@@ -22,9 +23,10 @@ IFCONFIG=/sbin/ifconfig
 ROUTE=/sbin/route
 TR=/usr/bin/tr
 
-GZIPLEVEL=3
-PORT=1111
-SNAME=_bolk-fileshare._tcp
+# конфигурация
+GZIPLEVEL=3 # уровень сжатия gzip
+PORT=1111 # порт, на котором будет передаваться файл
+SNAME=_bolk-fileshare._tcp # имя сервиса
 
 # Получаем наш IP 
 function _GetMyIP {
@@ -46,23 +48,28 @@ function _GetMyIP {
     fi
 }
 
+# клиентская часть
 function Client {
-    local info=($($EXPECT <<CMDS | $AWK 'NR>2 {print $7 " " $8}' | $SORT -u | $TR -d '\r'
+    # ждём когда в сети появится сервис с нужным нам именем
+    local info=($($EXPECT <<CMDS | $AWK 'NR>2 {print $7 " " $8}' | $SORT -u | $TR -d '\r' | $HEAD -n1
         spawn -noecho $DNSSD -B $SNAME
         expect Timestamp
         expect "$SNAME"
         exit
 CMDS))
 
-    local sum=${info[0]}
+    # в поле информации будет контрольная сумма и хост с которым нужно соединиться
+    local remotesum=${info[0]}
     local host=${info[1]}
 
     echo -n "Found file server on $host:$PORT. Getting file... " >&2
 
+    # соединяемся с сервером, получаем файл, считая его контрольную сумму
     exec 3>&1
-    local filesum=$($NC $host $PORT | $GZIP -d | $TEE >&3 | $MD5 -q)
+    local localsum=$($NC $host $PORT | $GZIP -d | $TEE >&3 | $MD5 -q)
 
-    if [ "$filesum"=="$sum" ]; then
+    # проверяем — совпадают ли суммы
+    if [ "$localsum"=="$remotesum" ]; then
         echo done. >&2
     else
         echo 'error (incorrect checksum)' >&2
@@ -70,19 +77,23 @@ CMDS))
     fi
 }
 
+# Убийство dns-sd, которая анонсирует сервис
 function _ClearServer {
-    # kill dns-sd
     $PS -f | $AWK "\$2==$1 && /$SNAME/ { print \$2 }" | $XARGS $KILL
 }
 
+# серверая часть
 function Server {
+    # если переданный файл существует
     if [ -e "$1" ]; then
         local info=$($MD5 -q "$1")" "$(_GetMyIP)
 
+        # анонсируем сервис, передавая контрольную сумму и свой IP
         $DNSSD -R "$info" "$SNAME" . $PORT >/dev/null &
     
         trap "_ClearServer $!" EXIT
 
+        # если соединился клиент, передаём ему файл
         $GZIP -nc$GZIPLEVEL "$1" | $NC -l $PORT
     else
         echo "File '$1' not found!"
@@ -90,6 +101,7 @@ function Server {
     fi
 }
 
+# main()
 if [ -z $1 ]; then
     Client
 else
