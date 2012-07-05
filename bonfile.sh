@@ -102,7 +102,7 @@ function Server {
 }
 
 # main()
-if [ -z $1 ]; then
+if [ -z "$1" ]; then
     Client
 else
     Server "$1"
