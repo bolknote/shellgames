@@ -21,7 +21,7 @@ cutname=`awk 'NR==1 {l=length; gsub(/^ +/, ""); print l-length+6}' $TEMP`
 while read line; do
     line=($line)
 
-    chs=(${line[2]//,+/ })
+    chs=(${line[2]//,/ })
 
     # Берём только каналы 2,4ГГц
     if [ ${chs[0]} -gt 13 ]; then
