@@ -12,7 +12,7 @@ for i in nc netcat ncat pnetcat; do
     which $i &>/dev/null && NC=$i && break
 done
 
-[ -z "$NC" ] && echo 'Error: you have to install netcat to continue' && exit
+[ -z "$NC" ] && echo 'Error: you have to install netcat to continue' && exit 2
 
 # Версия bash
 BASH=(${BASH_VERSION/./ })
@@ -68,9 +68,15 @@ stty -echo
 # Убирам курсор
 echo -e "\033[?25l"
 
+# Ошибка в обмене через сеть
+function NetworkError {
+  echo Error: cannot use port $PORT
+  exit 1
+}
+
 # Отдаём события клавиатуры в сеть
 function ToNet {
-    echo $1 | $NC "$HOST" "$PORT"
+    echo $1 | $NC "$HOST" "$PORT" 2>&- || NetworkError
 }
 
 # Реакция на клавиши курсора
@@ -260,7 +266,7 @@ function PrintBoard {
 
 # Приём событий
 function NetListen {
-    $NC -l $PORT
+    $NC -l $PORT 2>&- || NetworkError
 }
 
 # Готовы слушать события сети
