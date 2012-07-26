@@ -81,6 +81,9 @@ BX=5 BY=2900
 # Угол приращения мяча
 BAX=0 BAY=0
 
+# Версия bash
+BASH=(${BASH_VERSION/./ })
+
 # Координатная сетка виртуального экрана
 declare -a XY
 
@@ -538,10 +541,13 @@ function NextLevel {
 
 # Очистка клавиатурного буфера
 function ClearKeyboardBuffer {
+	  # Быстро — через bash 4+
+    [ $BASH -ge 4 ] && while read -t0.1 -n1 -rs; do :; done && return
+
     # Быстро — через zsh
     which zsh &>/dev/null && zsh -c 'while {} {read -rstk1 || break}' && return
 
-    # Медленно — через bash
+    # Медленно — через bash 3-
     local delta
     while true; do
         delta=`(time -p read -rs -n1 -t1) 2>&1 | awk 'NR==1{print $2}'`
