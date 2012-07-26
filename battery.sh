@@ -91,6 +91,15 @@ function GetPlatform {
     echo $diff $scale | tee $tmpfile
 }
 
+# Фоновый процесс — выводим возраст модели в определённые координаты
+function PrintAgeAt {
+    echo -en '\033[5A\033[26G\033[K'
+
+    printf "% 17s |" "$1"
+
+    echo -en '\033[5B\033[0G'
+}
+
 # Рисуем прогрессбар
 function PrintBat {
     # Если терминал поддерживает 256 цветов, покажем красиво
@@ -112,9 +121,6 @@ function PrintBat {
 
     echo -e ${bar/$prg/$rep}
 }
-
-# Возраст Мака
-age=$(GetPlatform `GetBatVal IOPlatformSerialNumber`)
 
 # Всё достаточно очевидно: боксы с информацией
 cur=$(GetBatVal Current)
@@ -147,9 +153,14 @@ echo    └───────────────────────
 echo  '  Details'
 echo    ┌──────────────────────────────────────────┐
 printf '│ Mac model:             % 17s │\n' $(GetBatVal productname)
-printf '│ Age of your Mac:       % 17s |\n' "$age"
+echo -e '│ Age of your Mac:              \033[1m…loading…\033[0m  |'
 printf '│ Battery loadcycles:                % 5d │\n' $(GetBatVal CycleCount)
 printf '│ Battery temperature:             % 5s˚С |\n' `echo "scale=1;($(GetBatVal Temperature)+5)/100" | bc`
 echo    └──────────────────────────────────────────┘
 
 echo -e "\033[0m"
+
+# Возраст Мака
+PrintAgeAt "$(GetPlatform `GetBatVal IOPlatformSerialNumber`)" &
+
+wait
