@@ -323,7 +323,7 @@ function SpaceEvent {
 
 # Очистка клавиатурного буфера
 function ClearKeyboardBuffer {
-	# Быстро — через bash 4+
+	  # Быстро — через bash 4+
     [ $BASH -ge 4 ] && while read -t0.1 -n1 -rs; do :; done && return
 	
     # Быстро — через zsh
