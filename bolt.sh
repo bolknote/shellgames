@@ -14,9 +14,8 @@ MAGIC='# bolt' # mark regexp
 MYIP='127.0.0.1'
 
 HOSTPATT=$(/bin/cat <<PATTERN
-NameVirtualHost %host%:80\n
 \n
-<VirtualHost %host%:80>\n
+<VirtualHost *:80>\n
 \tServerAdmin $(/usr/bin/whoami)@%host%\n
 \tDocumentRoot "$MYSITES%host%"\n
 \tServerName %host%\n
@@ -28,6 +27,7 @@ PATTERN
 # вызывается, чтобы убрать из /etc/hosts старые хосты
 function ClearHosts {
     /usr/bin/sed -iE "/${MAGIC}$/d" "$HOSTS"
+    /usr/bin/sed -iE "/${MAGIC}-www$/d" "$HOSTS"
 }
 
 # скан папки Apache и высеивание того, что на имена доменов не тянет
@@ -35,8 +35,10 @@ function NewSites {
     local host
 
     for host in `/bin/ls -1d "$MYSITES"*/ 2>&- | /usr/bin/egrep -o '/([a-z0-9]+\.)*[a-z0-9]+/$'`; do
-        echo "$MYIP ${host//\//} $MAGIC"
-        echo "$MYIP www.${host//\//} $MAGIC"
+        host="${host//\//}"
+
+        echo "$MYIP $host $MAGIC"
+        echo "$MYIP www.$host ${MAGIC}-www"
     done
 }
 
@@ -57,7 +59,9 @@ function RenewConfigFromHosts {
 
     ClearConfig
 
-    for host in `/usr/bin/awk "/$MAGIC/ {print \\$2}" "$HOSTS"`; do
+    echo 'NameVirtualHost *:80' > "$HTTPDCONF"
+
+    for host in `/usr/bin/awk "/$MAGIC$/ {print \\$2}" "$HOSTS"`; do
         echo -e ${HOSTPATT//%host%/$host} >> "$HTTPDCONF"
     done
 }
@@ -108,6 +112,6 @@ if [[ `/usr/bin/whoami` == root ]]; then
     trap Restore EXIT
     CheckLoop
 else
-    /usr/bin/sudo "$0"
+    /usr/bin/sudo -b bash "$0"
 fi
 
