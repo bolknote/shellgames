@@ -35,15 +35,18 @@ if [ -e $BACKUP ]; then
     echo Restored.
 else
     # если не было, сохраняем исходный файл
-    cp $PLIST $BACKUP
+    if cp $PLIST $BACKUP; then
+        # удаляем упоминание о раскладке US изо всех секций
+        /usr/libexec/PlistBuddy -c Print $PLIST | awk '/Array {/ {print $1}' |
+        while read field; do
+             DeleteFromSection $field `WhereUS $field`
+        done
 
-    # удаляем упоминание о раскладке US изо всех секций
-    /usr/libexec/PlistBuddy -c Print $PLIST | awk '/Array {/ {print $1}' |
-    while read field; do
-         DeleteFromSection $field `WhereUS $field`
-    done
-
-    echo Removed.
+        echo Removed.
+    else
+        echo Error: cannot backup file. Exiting.
+        exit 1
+    fi
 fi
 
 echo Try to logout.
