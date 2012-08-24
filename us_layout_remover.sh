@@ -31,18 +31,20 @@ function DeleteFromSection {
 
 # Смотрим, не было ли бакапа
 if [ -e $BACKUP ]; then
-    echo Please remove backup file first:
-    echo $BACKUP
-    exit 1
+    mv -f $BACKUP $PLIST
+    echo Restored.
+else
+    # если не было, сохраняем исходный файл
+    cp $PLIST $BACKUP
+
+    # удаляем упоминание о раскладке US изо всех секций
+    /usr/libexec/PlistBuddy -c Print $PLIST | awk '/Array {/ {print $1}' |
+    while read field; do
+         DeleteFromSection $field `WhereUS $field`
+    done
+
+    echo Removed.
 fi
 
-# если не было, сохраняем исходный файл
-cp $PLIST $BACKUP
-
-# удаляем упоминание о раскладке US изо всех секций
-/usr/libexec/PlistBuddy -c Print $PLIST | awk '/Array {/ {print $1}' |
-while read field; do
-     DeleteFromSection $field `WhereUS $field`
-done
-
+echo Try to logout.
 osascript -e 'tell application "System Events" to log out'
