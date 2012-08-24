@@ -3,7 +3,7 @@
 # http://artpolikarpov.ru/2012/08/24/1/
 
 PLIST=~/Library/Preferences/ByHost/com.apple.HIToolbox.*.plist
-BACKUP=$(echo ~/Library/Preferences/ByHost/com.apple.HIToolbox.*.plist).backup
+BACKUP=$(echo $PLIST).backup
 
 function GetSection {
     /usr/libexec/PlistBuddy -c "Print :$1" $PLIST
