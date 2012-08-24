@@ -9,3 +9,4 @@ wifi.sh - bash WiFi signal levels (Mac only)
 mac_ntfs_write_enabler.sh - enable NTFS write (Mac only, very UNSAFE)
 checkflashback.sh - check is Mac OS FlashBack virus infected
 bonfile.sh — передача файла между «Маками», используя Бонжур для автообнаружения
+us_layout_remover.sh — удаляет из системы раскладку U.S. English
