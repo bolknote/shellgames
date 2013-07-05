@@ -76,7 +76,7 @@ function NetworkError {
 
 # Отдаём события клавиатуры в сеть
 function ToNet {
-    echo $1 | $NC "$HOST" "$PORT" 2>&-
+    echo $1 | $NC "$HOST" "$PORT" 2>/dev/null
 
     [[ $? -eq 1 && -z "$2" ]] && NetworkError
 }
@@ -134,7 +134,7 @@ function CheckCons {
 # кроме KSPACE — на неё возвращается управление
 
 function PressEvents {
-    local real code action
+    local real code action ch
 
     # Цикл обработки клавиш, здесь считываются коды клавиш,
     # по паузам между нажатиями собираются комбинации и известные
@@ -142,18 +142,12 @@ function PressEvents {
     while true; do
         # измеряем время выполнения команды read и смотрим код нажатой клавиши
         # akw NR==1||NR==4 забирает только строку №1 (там время real) и №4 (код клавиши)
-        eval $( (time -p read -r -s -n1 ch; printf 'code %d\n' "'$ch") 2>&1 |
+        eval $( (time -p read -r -s -n1 ch; printf 'code %d\n' "'$ch ") 2>&1 |
         awk 'NR==1||NR==4 {print $1 "=" $2}' | tr '\r\n' '  ')
 
-        # read возвращает пусто для Enter и пробела, присваиваем им код 20,
-        # а так же возвращаются отрицательные коды для UTF8
-        if [ "$code" = 0 ]; then
-            code=20
-        else
-             [ $code -lt 0 ] && code=$((256+$code))
+        [ $code -lt 0 ] && code=$((256+$code))
 
-             code=$(printf '%02x' $code)
-        fi
+        code=$(printf '%02x' $code)
 
         if [ $code = $KSPACE ]; then
             [ "$OURMOVE" ] && sleep 0.2 && ToNet $KSPACE
@@ -336,8 +330,6 @@ function ClearKeyboardBuffer {
     while true; do
         delta=`(time -p read -rs -n1 -t1) 2>&1 | awk 'NR==1{print $2}'`
         [[ "$delta" == "0.00" ]] || break
-
-		echo $delta
     done
 }
 
