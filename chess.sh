@@ -76,7 +76,9 @@ function NetworkError {
 
 # Отдаём события клавиатуры в сеть
 function ToNet {
-    echo $1 | $NC "$HOST" "$PORT" 2>&- || NetworkError
+    echo $1 | $NC "$HOST" "$PORT" 2>&-
+
+    [[ $? && ! "$2" ]] && NetworkError
 }
 
 # Реакция на клавиши курсора
@@ -342,10 +344,10 @@ function ClearKeyboardBuffer {
 FillBoard
 
 # Кто будет ходить первым
-ToNet HI
+ToNet HI 1
 [[ "$(NetListen)" == "HI" ]] && OURMOVE=1
 sleep 0.2
-ToNet ULOOSE
+ToNet ULOOSE 1
 
 [ "$OURMOVE" ] && MYCOLOR=W || MYCOLOR=B
 
