@@ -78,7 +78,7 @@ function NetworkError {
 function ToNet {
     echo $1 | $NC "$HOST" "$PORT" 2>&-
 
-    [[ $? && ! "$2" ]] && NetworkError
+    [[ $? -eq 1 && -z "$2" ]] && NetworkError
 }
 
 # Реакция на клавиши курсора
