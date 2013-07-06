@@ -8,7 +8,7 @@ fi
 
 # Нам требуется netcat, ищем как он называется на этой системе
 NC=
-for i in nc netcat ncat pnetcat; do
+for i in nc netcat ncat pnetcat nc.openbsd; do
     which $i &>/dev/null && NC=$i && break
 done
 
@@ -262,7 +262,7 @@ function PrintBoard {
 
 # Приём событий
 function NetListen {
-    $NC -l $PORT 2>&- || NetworkError
+    $NC -l -p $PORT 2>&- || $NC -l $PORT 2>&- || NetworkError
 }
 
 # Готовы слушать события сети
@@ -336,10 +336,10 @@ function ClearKeyboardBuffer {
 FillBoard
 
 # Кто будет ходить первым
-ToNet HI 1
+ToNet HI IGNORE
 [[ "$(NetListen)" == "HI" ]] && OURMOVE=1
 sleep 0.2
-ToNet ULOOSE 1
+ToNet ULOOSE IGNORE
 
 [ "$OURMOVE" ] && MYCOLOR=W || MYCOLOR=B
 
