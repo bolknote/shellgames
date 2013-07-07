@@ -11,3 +11,4 @@ checkflashback.sh - check is Mac OS FlashBack virus infected
 bonfile.sh — передача файла между «Маками», используя Бонжур для автообнаружения
 us_layout_remover.sh — удаляет из системы раскладку U.S. English
 lebdec.sh — расшифровывает через декодер Студии Лебедева то, что пришло на stdin
+underwater.sh — таймер, который я использую для измерения сколько я могу провести под водой без дыхания
