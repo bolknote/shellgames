@@ -16,7 +16,7 @@ function PrintTimer {
     printf "\r⏰  \033[7m %02d:%02d \033[0m" $1 $2
 }
 
-trap 'echo -e "\033[?25h\033[0m\n"' EXIT
+trap 'echo -e "\033[?25h\033[0m"' EXIT
 
 echo -e "\033[?25l"
 start=$(date +%s)
@@ -24,7 +24,7 @@ echo -e 'Press ^C key to exit and any other key to memory current value.\n'
 PrintTimer 0 0
 
 while true; do
-    timeout=( $( (time -p read -n1 -t1 -rs key) 2>&1) )
+    timeout=( $( (time -p read -n1 -t1 -rs) 2>&1) )
 
     [ ${timeout[1]} != "1.00" ] && printf "\n\n"
 
