@@ -76,9 +76,12 @@ function NetworkError {
 
 # Отдаём события клавиатуры в сеть
 function ToNet {
-    echo $1 | $NC "$HOST" "$PORT" 2>/dev/null
+    while true; do
+        echo $1 | $NC "$HOST" "$PORT" 2>&-
 
-    [[ $? -eq 1 && -z "$2" ]] && NetworkError
+        [ $? = 0 -o -n "$2" ] && break
+        sleep .2
+    done
 }
 
 # Реакция на клавиши курсора
