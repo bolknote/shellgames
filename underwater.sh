@@ -16,12 +16,22 @@ function PrintTimer {
     printf "\r⏰  \033[7m %02d:%02d \033[0m" $1 $2
 }
 
+function VolumeUp {
+    which -s osascript || return
+
+    eval "local _$(osascript -e 'get volume settings' | tr ',: ' ' =_' )"
+    [[ "$_output_muted" == true ]] && osascript -e 'set volume output muted false'
+    [ $_output_volume -lt 50 ] && osascript -e 'set volume output volume 50'
+}
+
 trap 'echo -e "\033[?25h\033[0m"' EXIT
 
 echo -e "\033[?25l"
 start=$(date +%s)
 echo -e 'Press ^C key to exit and any other key to memory current value.\n'
 PrintTimer 0 0
+
+VolumeUp
 
 while true; do
     timeout=( $( (time -p read -n1 -t1 -rs) 2>&1) )
