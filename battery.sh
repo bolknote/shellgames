@@ -48,17 +48,10 @@ function GetPlatform {
         fi
     fi
 
-    getprg=`builtin type -p curl 2>&-` || getprg=`builtin type -p wget 2>&-`
-
-    if [ -z "$getprg" ]; then
-        echo NA
-        return
-    fi
-
     local date=($(\
-        $getprg --connect-timeout 3 "http://$HOST/cgi-fast/applemodel.cgi?serienummer=$1" 2>/dev/null |
-        sed 's/<BR>/`/g' | awk 'BEGIN {RS="`"} /Production (year|week)/{gsub("<[^>]+>", ""); print $2 $3}' |
-        sort | cut -d: -f2 | tr "\r\n" '  '
+        curl --connect-timeout 3 "http://$HOST/cgi-fast/applemodel.cgi?serienummer=$1" 2>/dev/null |
+        sed 's/<BR>/`/g' | awk 'BEGIN {RS="`"} /Production (year|week)/{gsub("<[^>]+>", ""); print}' |
+        sort | sed 's/^[^:]*: *//;s/[^0-9 ]//g' | tr "\r\n" '  '
     ))
 
     if [ ${#date[@]} -le 1 ]; then
