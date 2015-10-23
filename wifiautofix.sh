@@ -3,7 +3,7 @@
 wifi=$(networksetup -listallhardwareports | fgrep Wi-Fi -A1 | awk 'NF==2{print $2}')
 
 while true; do
-	if networksetup -getairportpower en0 | fgrep -q On; then
+	if networksetup -getairportpower $wifi | fgrep -q On; then
 		ping -b $wifi -t1 -n 8.8.8.8 >&- 2>&- ||
 			(
 				networksetup -setairportpower $wifi off;
