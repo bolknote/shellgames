@@ -3,12 +3,14 @@
 wifi=$(networksetup -listallhardwareports | fgrep Wi-Fi -A1 | awk 'NF==2{print $2}')
 
 while true; do
-	ping -b $wifi -t1 -n 8.8.8.8 >&- 2>&- ||
-		(
-			networksetup -setairportpower $wifi off;
-			echo "$(date +%d.%m.%Y\ %R:%S) Reconnecting…";
-			networksetup -setairportpower $wifi on;
-			sleep 10
-		)
+	if networksetup -getairportpower en0 | fgrep -q On; then
+		ping -b $wifi -t1 -n 8.8.8.8 >&- 2>&- ||
+			(
+				networksetup -setairportpower $wifi off;
+				echo "$(date +%d.%m.%Y\ %R:%S) Reconnecting…";
+				networksetup -setairportpower $wifi on;
+				sleep 10
+			)
+	fi
 	sleep 1
 done
