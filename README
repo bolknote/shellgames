@@ -1,18 +1,19 @@
 Тут находся всякие мои заигрывания с Bash и другими shell
 
-bolt.sh — программа, следящая за изменением папки с сайтами на Маке и заводящая сайты в Apache и hosts
-growl.sh - работаем с Growl на MacOS через протокол GNTP v1
 battery.sh - bash analog of batteryCoconut program (Mac only)
 block.sh - bash binary clock
-chess.sh - bash network chess game (controls: ←, →, ↓, ↑ and Space)
-wifi.sh - bash WiFi signal levels (Mac only)
-mac_ntfs_write_enabler.sh - enable NTFS write (Mac only, very UNSAFE)
-checkflashback.sh - check is Mac OS FlashBack virus infected
+bolt.sh — программа, следящая за изменением папки с сайтами на Маке и заводящая сайты в Apache и hosts
 bonfile.sh — передача файла между «Маками», используя Бонжур для автообнаружения
-us_layout_remover.sh — удаляет из системы раскладку U.S. English
-lebdec.sh — расшифровывает через декодер Студии Лебедева то, что пришло на stdin
-underwater.sh — таймер, который я использую для измерения сколько я могу провести под водой без дыхания
+checkflashback.sh - check is Mac OS FlashBack virus infected
+chess.sh - bash network chess game (controls: ←, →, ↓, ↑ and Space)
 fixzip.sh — скрипт для восстановления русских букв после раззипования архивов на «Маке»
-helloworld.bash — запутанный скрипт на Баше, выводящий «Hello world» (bash4)
-happynewyear.bash — запутанный скрипт на Баше, выводящий «Happy new year» (bash4)
 ftdnato23andme.sed — конвертор FTDNA → 23andme
+growl.sh - работаем с Growl на MacOS через протокол GNTP v1
+happynewyear.bash — запутанный скрипт на Баше, выводящий «Happy new year» (bash4)
+helloworld.bash — запутанный скрипт на Баше, выводящий «Hello world» (bash4)
+lebdec.sh — расшифровывает через декодер Студии Лебедева то, что пришло на stdin
+mac_ntfs_write_enabler.sh - enable NTFS write (Mac only, very UNSAFE)
+underwater.sh — таймер, который я использую для измерения сколько я могу провести под водой без дыхания
+us_layout_remover.sh — удаляет из системы раскладку U.S. English
+wifi.sh - bash WiFi signal levels (Mac only)
+wifiautofix.sh — автоматическое пересоединение при пропадании вайфая
