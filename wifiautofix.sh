@@ -4,7 +4,9 @@ wifi=$(networksetup -listallhardwareports | fgrep Wi-Fi -A1 | awk 'NF==2{print $
 
 while true; do
 	if networksetup -getairportpower $wifi | fgrep -q On; then
-		ping -b $wifi -t2 -n 8.8.8.8 >&- 2>&- ||
+		ip=$(netstat -rn | awk "/^default.*$wifi\$/{print \$2;exit}")
+
+		ping -b $wifi -t2 -n $ip >&- 2>&- ||
 			(
 				networksetup -setairportpower $wifi off
 				echo "$(date +%d.%m.%Y\ %R:%S) Reconnecting…"
