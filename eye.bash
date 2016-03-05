@@ -57,7 +57,7 @@ function DrawEye {
 		-fill Blue -draw "circle $x,$y $(($x+2)),$(($y+2))" \
 		-strokewidth 0 \
 		\( +clone -negate -fill white -draw "circle $(($w-1)),$((w-1)),$w" \) \
-		-alpha off -compose copy_opacity -composite png:-
+		-alpha off -compose copy_opacity -strip -composite png:-
 }
 
 # Выводим глаз по координатам на которые надо смотреть
