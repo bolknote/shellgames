@@ -1,4 +1,4 @@
-Тут находся всякие мои заигрывания с Bash и другими shell
+Тут находятся всякие мои заигрывания с Bash и другими shell
 
 battery.sh - bash analog of batteryCoconut program (Mac only)
 block.sh - bash binary clock
@@ -6,6 +6,7 @@ bolt.sh — программа, следящая за изменением па
 bonfile.sh — передача файла между «Маками», используя Бонжур для автообнаружения
 checkflashback.sh - check is Mac OS FlashBack virus infected
 chess.sh - bash network chess game (controls: ←, →, ↓, ↑ and Space)
+eye.bash — глаз следящий за курсором мыши (требует iTerm2 2.9+)
 fixzip.sh — скрипт для восстановления русских букв после раззипования архивов на «Маке»
 ftdnato23andme.sed — конвертор FTDNA → 23andme
 growl.sh - работаем с Growl на MacOS через протокол GNTP v1
