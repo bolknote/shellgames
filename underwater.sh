@@ -9,7 +9,7 @@ function SayMinute {
 }
 
 function SayMiddle {
-    say -v "$VOICE" middle &
+    say -v "$VOICE" half &
 }
 
 function PrintTimer {
@@ -36,7 +36,7 @@ VolumeUp
 while true; do
     timeout=( $( (time -p read -n1 -t1 -rs) 2>&1) )
 
-    [ ${timeout[1]} != "1.00" ] && printf "\n\n"
+    [[ ${timeout[1]} != 1* ]] && printf "\n\n"
 
     now=$(date +%s)
     per=$(( $now - $start))
