@@ -56,7 +56,7 @@ function DrawEye {
 	convert -size ${W}x${W} xc: -strokewidth 2 -stroke LightBlue \
 		-fill Blue -draw "circle $x,$y $(($x+2)),$(($y+2))" \
 		-strokewidth 0 \
-		\( +clone -negate -fill white -draw "circle $(($w-1)),$((w-1)),$w" \) \
+		\( +clone -negate -fill white -draw "circle $(($w-1)),$((w-1)) 0,$w" \) \
 		-alpha off -compose copy_opacity -strip -composite png:-
 }
 
