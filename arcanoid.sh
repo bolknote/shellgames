@@ -657,7 +657,7 @@ function PressEvents {
         fi
 
         # Если клавиши идут подряд (задержки по времени нет)
-        if [ $real = 0.00 ]; then
+        if [[ $real =~ ^0[.,]00$ ]]; then
             seq="$seq$code"
 
             if CheckCons $seq; then
