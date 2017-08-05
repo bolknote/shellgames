@@ -12,6 +12,7 @@ ftdnato23andme.sed — конвертор FTDNA → 23andme
 growl.sh - работаем с Growl на MacOS через протокол GNTP v1
 happynewyear.bash — запутанный скрипт на Баше, выводящий «Happy new year» (bash4)
 helloworld.bash — запутанный скрипт на Баше, выводящий «Hello world» (bash4)
+helloworld2.bash — ещё один запутанный скрипт на Баше, выводящий «Hello world» (bash4)
 lebdec.sh — расшифровывает через декодер Студии Лебедева то, что пришло на stdin
 mac_ntfs_write_enabler.sh - enable NTFS write (Mac only, very UNSAFE)
 underwater.sh — таймер, который я использую для измерения сколько я могу провести под водой без дыхания
