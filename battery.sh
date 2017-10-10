@@ -49,7 +49,8 @@ function GetPlatform {
     fi
 
     local date=($(\
-        curl --connect-timeout 3 "http://$HOST/cgi-fast/applemodel.cgi?serienummer=$1" 2>/dev/null |
+        curl --connect-timeout 3 -H 'User-Agent: M' -XPOST -s \
+            -d "serienummer2=$1&submit=Submit" "http://$HOST/cgi-fast/applemodel.cgi" |
         sed 's/<BR>/`/g' | awk 'BEGIN {RS="`"} /Production (year|week)/{gsub("<[^>]+>", ""); print}' |
         sort | sed 's/^[^:]*: *//;s/[^0-9 ]//g' | tr "\r\n" '  '
     ))
