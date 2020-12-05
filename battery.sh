@@ -2,10 +2,6 @@
 # Информация о батарейке на bash. Евгений Степанищев http://bolknote.ru/ 2011
 # Bash Battery Info. Copyright by Evgeny Stepanischev http://bolknote.ru/ 2011
 
-
-# Хост для информации о серийнике
-HOST='www.chipmunk.nl'
-
 # Выбираем информацию о батарее, получится что-то вроде
 # Amperage 18446744073709550574 Flags 4 Capacity 6632 Current 6338 Voltage 8192 CycleCount 14 и тд
 
@@ -28,70 +24,6 @@ function GetBatVal {
             break
         fi
     done
-}
-
-# Получаем информацию о неделе выпуска
-function GetPlatform {
-    local tmpfile="$TMPDIR/battery-age-mac"
-
-    # Файл с кешем, чтобы не дёргать сервис каждый раз
-    if [ -e $tmpfile ]; then
-        # проверим время создания файла
-        eval $(stat -s $tmpfile)
-
-        # Если кеш устарел, то удаляем его
-        if [ $((`date +%s` - $st_mtime)) -gt 86400 ]; then
-            rm -f $tmpfile
-        else
-            cat $tmpfile
-            return
-        fi
-    fi
-
-    local date=($(\
-        curl --connect-timeout 3 -H 'User-Agent: M' -XPOST -s \
-            -d "serienummer2=$1&submit=Submit" "http://$HOST/cgi-fast/applemodel.cgi" |
-        sed 's/<BR>/`/g' | awk 'BEGIN {RS="`"} /Production (year|week)/{gsub("<[^>]+>", ""); print}' |
-        sort | sed 's/^[^:]*: *//;s/[^0-9 ]//g' | tr "\r\n" '  '
-    ))
-
-    if [ ${#date[@]} -le 1 ]; then
-        echo NA
-        return
-    fi
-
-    local scale
-    local diff
-
-    # Считаем количество недель
-    let diff="($(date +%Y)-${date[1]})*52177 + ( $(date +%V) - ${date[0]}) * 1000"
-
-    # Выбираем что будем отображать — недели, месяцы, годы
-    if [ $diff -gt 5 ]; then
-        diff=$(( $diff / 4340 ))
-        scale=Month
-
-        if [ $diff -gt 12 ]; then
-            diff=$(( $diff / 12 ))
-            scale=Year
-        fi
-    else
-        diff=$(( $diff / 1000 ))
-        scale=Week
-    fi
-
-    [ $diff -gt 1 ] && scale=${scale}s
-
-    echo $diff $scale | tee $tmpfile
-}
-
-# Фоновый процесс — выводим возраст модели в определённые координаты
-function PrintAgeAt {
-    echo -en '\033[5A\033[26G\033[K'
-
-    printf "% 17s |" "$1"
-
-    echo -en '\033[5B\033[0G'
 }
 
 # Рисуем прогрессбар
@@ -147,14 +79,8 @@ echo    └───────────────────────
 echo  '  Details'
 echo    ┌──────────────────────────────────────────┐
 printf '│ Mac model:             % 17s │\n' $(GetBatVal productname)
-echo -e '│ Age of your Mac:              \033[1m…loading…\033[0m  |'
 printf '│ Battery loadcycles:                % 5d │\n' $(GetBatVal CycleCount)
 printf '│ Battery temperature:             % 5s˚С |\n' `echo "scale=1;($(GetBatVal Temperature)+5)/100" | bc`
 echo    └──────────────────────────────────────────┘
 
 echo -e "\033[0m"
-
-# Возраст Мака
-PrintAgeAt "$(GetPlatform `GetBatVal IOPlatformSerialNumber`)" &
-
-wait
