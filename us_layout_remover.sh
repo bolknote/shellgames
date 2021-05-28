@@ -2,7 +2,7 @@
 # Evgeny Stepanischev Aug 2012 http://bolknote.ru
 # http://artpolikarpov.ru/2012/08/24/1/
 
-PLIST=~/Library/Preferences/ByHost/com.apple.HIToolbox.*.plist
+PLIST=~/Library/Preferences/com.apple.HIToolbox.*.plist
 BACKUP=$(echo $PLIST).backup
 
 function GetSection {
