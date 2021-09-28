@@ -7,6 +7,7 @@ bonfile.sh — передача файла между «Маками», испо
 checkflashback.sh - check is Mac OS FlashBack virus infected
 chess.sh - bash network chess game (controls: ←, →, ↓, ↑ and Space)
 eye.bash — глаз следящий за курсором мыши (требует iTerm2 2.9+)
+patch-ilya-birman-typography-layout.bash — меняет значки в раскладки Бирмана на флаги стран (только для «Мака»)
 fixzip.sh — скрипт для восстановления русских букв после раззипования архивов на «Маке»
 ftdnato23andme.sed — конвертор FTDNA → 23andme
 growl.sh - работаем с Growl на MacOS через протокол GNTP v1
