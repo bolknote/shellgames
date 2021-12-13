@@ -24,4 +24,6 @@ function scan() {
     done
 }
 
-scan "${1-.}"
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
+scan "${1-${SCRIPT_DIR}}"
