@@ -147,7 +147,7 @@ echo    └───────────────────────
 echo  '  Details'
 echo    ┌──────────────────────────────────────────┐
 printf '│ Mac model:             % 17s │\n' $(GetBatVal productname)
-echo -e '│ Age of your Mac:              \033[1m…loading…\033[0m  |'
+echo -e '│ Age of your Mac:              \033[1m…loading…\033[0m  │'
 printf '│ Battery loadcycles:                % 5d │\n' $(GetBatVal CycleCount)
 printf '│ Battery temperature:             % 5s˚С │\n' `echo "scale=1;($(GetBatVal Temperature)+5)/100" | bc`
 echo    └──────────────────────────────────────────┘
