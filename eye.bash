@@ -3,6 +3,8 @@
 # Требует Imagemagick для работы
 W=16
 
+CONVERT=$(command -v magick || command -v convert)
+
 # Отключаем вывод на экран
 ORIG=$(stty -g)
 stty -echo
@@ -12,7 +14,7 @@ printf "\033[?25l\033[2J"
 # На выходе восстанавливаем параметры экраны
 trap 'Restore' EXIT
 function Restore {
- 	stty "$ORIG"
+ 	stty "$ORIG" 2>&-
  	printf "\033[?1003l\033[?25h"
 	exit
 }
@@ -53,7 +55,7 @@ function DrawEye {
 	local x="$1" y="$2" w="$3"
 
 	# На белом фоне — круг с обводкой, потом вырезаем из этого круг
-	convert -size ${W}x${W} xc: -strokewidth 2 -stroke LightBlue \
+	$CONVERT -size ${W}x${W} xc: -strokewidth 2 -stroke LightBlue \
 		-fill Blue -draw "circle $x,$y $(($x+2)),$(($y+2))" \
 		-strokewidth 0 \
 		\( +clone -negate -fill white -draw "circle $(($w-1)),$((w-1)) 0,$w" \) \
