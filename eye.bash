@@ -1,7 +1,7 @@
 #!/bin/bash
 # Только для терминала iTerm 2 версии 2.9 и выше!
 # Требует Imagemagick для работы
-W=16
+W=32
 
 CONVERT=$(command -v magick || command -v convert)
 
@@ -12,12 +12,13 @@ stty -echo
 printf "\033[?25l\033[2J"
 
 # На выходе восстанавливаем параметры экраны
-trap 'Restore' EXIT
 function Restore {
  	stty "$ORIG" 2>&-
  	printf "\033[?1003l\033[?25h"
 	exit
 }
+
+trap 'Restore' EXIT
 
 # Слушаем мышь
 function Listener {
@@ -29,16 +30,16 @@ function Listener {
 	# Собираем координаты, считывая их побайтно
 	while read -n 1 n; do
 		case "$n" in
-		"[")
-			code=
-			;;
 		[0-9] | ";")
 			code="$code$n"
 			;;
 		*)
 			if [ -n "$code" ]; then
 				IFS=";" read -ra arr <<<"$code"
-				Eye "${arr[1]}" "${arr[2]}"
+				if [ ${#arr[@]} -gt 1 ]; then
+					Eye "${arr[1]}" "${arr[2]}"
+				fi
+				code=
 			fi
 			;;
 		esac
@@ -56,7 +57,7 @@ function DrawEye {
 
 	# На белом фоне — круг с обводкой, потом вырезаем из этого круг
 	$CONVERT -size ${W}x${W} xc: -strokewidth 2 -stroke LightBlue \
-		-fill Blue -draw "circle $x,$y $(($x+2)),$(($y+2))" \
+		-fill Blue -draw "circle $x,$y $(($x+4)),$(($y+4))" \
 		-strokewidth 0 \
 		\( +clone -negate -fill white -draw "circle $(($w-1)),$((w-1)) 0,$w" \) \
 		-alpha off -compose copy_opacity -strip -composite png:-
@@ -69,7 +70,6 @@ function Eye {
 
 	# Считаем гипотенузу, потом sin/cos угла, а из них выводим координаты зрачка
 	xy=($(/usr/bin/awk "BEGIN {c=sqrt($mx^2+$my^2); sn=$my/c; cs=$mx/c; print int(3+$w*cs), int(3+$w*sn)}"))
-
 	DrawEye ${xy[0]} ${xy[1]} $w | Img
 }
 
