@@ -2,6 +2,7 @@
 # Только для терминала iTerm 2 версии 2.9 и выше!
 # Требует Imagemagick для работы
 W=32
+Z=4 # во сколько раз увеличение
 
 CONVERT=$(command -v magick || command -v convert)
 
@@ -48,7 +49,8 @@ function Listener {
 
 # Выводим картинку на экран
 function Img {
-	printf "\033]1337;File=inline=1:%s\a\n" $(base64)
+	local w=$(($W * $Z))
+	printf "\033]1337;File=width=${w}px;height=${w}px;inline=1:%s\a\n" $(base64)
 }
 
 # Рисуем глаз по зрачком
