@@ -542,7 +542,7 @@ function NextLevel {
 # Очистка клавиатурного буфера
 function ClearKeyboardBuffer {
 	  # Быстро — через bash 4+
-    [ $BASH -ge 4 ] && while read -t0.1 -n1 -rs; do :; done && return
+    [ ${BASH_VERSINFO:-0} -ge 4 ] && while read -t0.1 -n1 -rs; do :; done && return
 
     # Быстро — через zsh
     which zsh &>/dev/null && zsh -c 'while {} {read -rstk1 || break}' && return
@@ -586,7 +586,7 @@ function Arcanoid {
 }
 
 function Restore {
-	[ -n "$CHILD" ] && kill $CHILD
+	[ -n "$CHILD" ] && pkill -F <(printf "%d" $CHILD) bash
 	wait
 
  	stty "$ORIG"
